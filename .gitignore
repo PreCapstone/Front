@@ -1,0 +1,23 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+AIGenPage/node_modules
+AIGenPage/.pnp
+AIGenPage.pnp.js
+
+# testing
+AIGenPage/coverage
+
+# production
+AIGenPage/build
+
+# misc
+AIGenPage/.DS_Store
+AIGenPage/.env.local
+AIGenPage/.env.development.local
+AIGenPage/.env.test.local
+AIGenPage/.env.production.local
+
+AIGenPage/npm-debug.log*
+AIGenPage/yarn-debug.log*
+AIGenPage/yarn-error.log*
