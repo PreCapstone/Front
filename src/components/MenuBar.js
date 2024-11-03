@@ -1,7 +1,7 @@
+// src/components/MenuBar.js
 import React from 'react';
 import styled from 'styled-components';
-import { FaRobot } from "react-icons/fa";
-import { FaClipboardList } from "react-icons/fa";
+import { FaRobot, FaClipboardList, FaImage, FaTextHeight } from "react-icons/fa";
 
 const MenuContainer = styled.div`
   display: flex;
@@ -11,34 +11,48 @@ const MenuContainer = styled.div`
 `;
 
 const MenuItem = styled.button`
-  padding: 10px;
+  padding: 20px;
   font-size: 18px;
-  text-align: center;
+  text-align: left;
   background-color: ${({ active }) => (active ? '#9B30FF' : '#fff')};
-  color: ${({ active }) => (active ? '#fff' : '#000')};
+  color: ${({ active, disabled }) => (disabled ? '#ccc' : active ? '#fff' : '#000')};
   border: none;
-  cursor: pointer;
+  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
   margin: 5px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: ${({ disabled }) => (disabled ? 'none' : 'auto')};
 
   &:hover {
-    background-color: #9B30FF;
-    color: #fff;
+    background-color: ${({ disabled }) => (disabled ? '#fff' : '#9B30FF')};
+    color: ${({ disabled }) => (disabled ? '#ccc' : '#fff')};
   }
 `;
 
-const MenuBar = ({ setActivePage, activePage }) => {
+const MenuBar = ({ setActivePage, activePage, openFileDialog, imageUploaded }) => {
   return (
     <MenuContainer>
       <MenuItem active={activePage === 'AIGen'} onClick={() => setActivePage('AIGen')}>
-        <FaRobot/> <br></br> {/*아이콘*/}
-        AI 자동 생성
+        <FaRobot /> AI 자동 생성
       </MenuItem>
-      <MenuItem active={activePage === 'Other'} onClick={() => setActivePage('Other')}>
-        <FaClipboardList/> <br></br> {/*아이콘*/}
-        추천 템플릿
+      <MenuItem onClick={openFileDialog}>
+        <FaImage /> 내 사진
+      </MenuItem>
+      <MenuItem active={activePage === 'Template'} onClick={() => setActivePage('Template')}>
+        <FaClipboardList /> 추천 템플릿
+      </MenuItem>
+      <MenuItem
+        active={activePage === 'Text'}
+        onClick={() => setActivePage('Text')}
+        disabled={!imageUploaded}
+      >
+        <FaTextHeight /> 텍스트
       </MenuItem>
     </MenuContainer>
   );
 };
 
 export default MenuBar;
+
+
