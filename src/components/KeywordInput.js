@@ -62,27 +62,23 @@ const CompleteButton = styled.button`
   }
 `;
 
-const KeywordInput = ({ onComplete }) => {
+const KeywordInput = () => {
   const [keywords, setKeywords] = useState([]);
-  const [currentKeyword, setCurrentKeyword] = useState('');
+  const [currentKeyword, setCurrentKeyword] = useState('');  // 입력된 키워드를 관리
 
   const handleInputChange = (e) => {
-    setCurrentKeyword(e.target.value);
+    setCurrentKeyword(e.target.value);  // 입력 값 업데이트
   };
 
   const addKeyword = () => {
     if (currentKeyword.trim() !== '') {
-      const newKeywords = [...keywords, currentKeyword];
-      setKeywords(newKeywords);
-      setCurrentKeyword('');
-      onComplete(newKeywords); // 상위 컴포넌트에 키워드 업데이트 알림
+      setKeywords([...keywords, currentKeyword]);  // 키워드 리스트에 추가
+      setCurrentKeyword('');  // 입력 필드 초기화
     }
   };
 
   const removeKeyword = (index) => {
-    const newKeywords = keywords.filter((_, i) => i !== index);
-    setKeywords(newKeywords);
-    onComplete(newKeywords); // 상위 컴포넌트에 키워드 업데이트 알림
+    setKeywords(keywords.filter((_, i) => i !== index));  // 키워드 제거
   };
 
   return (
@@ -92,8 +88,8 @@ const KeywordInput = ({ onComplete }) => {
         <div style={{ display: 'flex' }}>
           <KeywordInputField
             placeholder="키워드를 입력하세요"
-            value={currentKeyword}
-            onChange={handleInputChange}
+            value={currentKeyword}  // 입력 필드에 현재 키워드 값 연결
+            onChange={handleInputChange}  // 입력 필드 변화 감지
           />
           <AddButton onClick={addKeyword}>+</AddButton>
         </div>
