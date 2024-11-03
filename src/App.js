@@ -3,6 +3,8 @@ import MenuBar from './components/MenuBar';
 import AIGenPage from './pages/AIGenPage';  // AI 생성 페이지 임포트
 import OtherPage from './pages/OtherPage';  // 예시로 다른 페이지 추가
 
+// npm start
+
 const App = () => {
   const [activePage, setActivePage] = useState('AIGen');  // 기본 페이지는 AI 생성
 
@@ -33,3 +35,7 @@ const App = () => {
 };
 
 export default App;
+
+
+
+
