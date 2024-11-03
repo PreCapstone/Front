@@ -14,23 +14,8 @@ const App = () => {
   const [generatedMessage, setGeneratedMessage] = useState('');
 
   // 메시지 생성 함수
-  const handleGenerateMessage = async (newPrompt) => {
-    setPrompt(newPrompt);
-    try {
-      const response = await axios.post('/GPT/api/create-message', {
-        mood: '알아서 결정',
-        target: '알아서 결정',
-        product: '알아서 결정',
-        keyword: keywords.join(', '),
-        prompt: newPrompt,
-      });
-
-      if (response.status === 200) {
-        setGeneratedMessage(response.data);
-      }
-    } catch (error) {
-      console.error("메시지 생성 오류:", error);
-    }
+  const handleGenerateMessage = (newPrompt) => {
+    setGeneratedMessage(newPrompt); // 메시지 상태 업데이트
   };
 
   // 이미지 생성 함수

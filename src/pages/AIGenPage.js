@@ -22,7 +22,7 @@ const AIGenPage = ({
         <MessageGenerate onGenerate={handleGenerateMessage} />
         <MessageInput 
           value={generatedMessage} 
-          onPromptChange={handleGenerateMessage} 
+          onPromptChange={handleGenerateMessage}
           onGenerateImage={handleGenerateImage} 
         />
       </div>

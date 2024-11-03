@@ -1,3 +1,4 @@
+// src/components/MessageInput.js
 import React from 'react';
 import styled from 'styled-components';
 
@@ -35,26 +36,26 @@ const Button = styled.button`
 
 const MessageInput = ({ value, onPromptChange, onGenerateImage }) => {
   const handlePromptChange = (e) => {
-    onPromptChange(e.target.value); // 부모로부터 받은 함수 호출
+    onPromptChange(e.target.value); // 부모로부터 받은 함수 호출로 상태 업데이트
   };
 
-  const handleGenerateImage = () => {
-    if (onGenerateImage) {
-      onGenerateImage(); // 이미지 생성 핸들러 호출
-    }
+  // 메시지의 바이트 수 계산 함수
+  const getByteCount = (text) => {
+    return new TextEncoder().encode(text).length;
   };
 
   return (
     <Container>
       <TextArea
         value={value} // 부모로부터 받은 value 사용
-        onChange={handlePromptChange}
+        onChange={handlePromptChange} // 입력 변화 감지
         placeholder="메시지를 입력해주세요."
       />
-      <ByteCount>{value.length}/2000byte</ByteCount>
-      <Button onClick={handleGenerateImage}>AI 자동 생성</Button>
+      <ByteCount>{getByteCount(value)}/2000 byte</ByteCount>
+      <Button onClick={onGenerateImage}>AI 자동 생성</Button>
     </Container>
   );
 };
 
 export default MessageInput;
+
