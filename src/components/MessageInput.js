@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
 const Container = styled.div`
-  width: flex;
+  width: 100%;
   padding: 10px;
 `;
 
@@ -33,22 +33,26 @@ const Button = styled.button`
   }
 `;
 
-const MessageInput = () => {
-  const [message, setMessage] = useState('');
+const MessageInput = ({ value, onPromptChange, onGenerateImage }) => {
+  const handlePromptChange = (e) => {
+    onPromptChange(e.target.value); // 부모로부터 받은 함수 호출
+  };
 
-  const handleInputChange = (e) => {
-    setMessage(e.target.value);
+  const handleGenerateImage = () => {
+    if (onGenerateImage) {
+      onGenerateImage(); // 이미지 생성 핸들러 호출
+    }
   };
 
   return (
     <Container>
       <TextArea
-        value={message}
-        onChange={handleInputChange}
+        value={value} // 부모로부터 받은 value 사용
+        onChange={handlePromptChange}
         placeholder="메시지를 입력해주세요."
       />
-      <ByteCount>{message.length}/2000byte</ByteCount>
-      <Button onClick={() => console.log('AI 자동 생성 클릭됨')}>AI 자동 생성</Button>
+      <ByteCount>{value.length}/2000byte</ByteCount>
+      <Button onClick={handleGenerateImage}>AI 자동 생성</Button>
     </Container>
   );
 };
