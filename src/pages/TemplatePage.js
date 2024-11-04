@@ -56,6 +56,7 @@ const CompleteButton = styled.button`
   color: white;
   border: none;
   cursor: pointer;
+
   &:hover {
     background-color: #6a1bb3;
   }
@@ -76,32 +77,37 @@ const TemplatePage = () => {
 
   return (
     <Container>
-      {/* 템플릿 목록 */}
       <TemplateList>
         <h2>추천 템플릿</h2>
         <input type="text" placeholder="카테고리 선택 혹은 검색" style={{ width: '100%', marginBottom: '10px' }} />
-        {templates.map(template => (
+        {templates.map((template) => (
           <TemplateItem key={template.id} onClick={() => handleTemplateClick(template)}>
             {template.title}
           </TemplateItem>
         ))}
       </TemplateList>
 
-      {/* 선택된 템플릿 미리보기 */}
       <PreviewContainer>
         {selectedTemplate ? (
-          <img src={selectedTemplate.imageUrl} alt={selectedTemplate.title} style={{ maxHeight: '100%', maxWidth: '100%' }} />
+          <img
+            src={selectedTemplate.imageUrl}
+            alt={selectedTemplate.title}
+            style={{ maxHeight: '100%', maxWidth: '100%' }}
+          />
         ) : (
           <p>템플릿을 선택하세요</p>
         )}
       </PreviewContainer>
 
-      {/* 생성 결과 및 완료 버튼 */}
       <ResultContainer>
         <h2>생성 결과</h2>
         {selectedTemplate && (
           <ResultImage>
-            <img src={selectedTemplate.imageUrl} alt={selectedTemplate.title} style={{ width: '100%' }} />
+            <img
+              src={selectedTemplate.imageUrl}
+              alt={selectedTemplate.title}
+              style={{ width: '100%' }}
+            />
           </ResultImage>
         )}
         <CompleteButton>제작완료</CompleteButton>

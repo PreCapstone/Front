@@ -1,4 +1,4 @@
-// MessageGenerate.js
+// src/components/MessageGenerate.js
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
@@ -31,6 +31,10 @@ const MessageGenerate = ({ onGenerate }) => {
 
   const handleInputChange = (e) => setPrompt(e.target.value);
 
+  const handleGenerateMessage = () => {
+    onGenerate(prompt);
+  };
+
   return (
     <Container>
       <InputField
@@ -38,7 +42,7 @@ const MessageGenerate = ({ onGenerate }) => {
         value={prompt}
         onChange={handleInputChange}
       />
-      <GenerateButton onClick={() => onGenerate(prompt)}>
+      <GenerateButton onClick={handleGenerateMessage}>
         GPT 자동 생성
       </GenerateButton>
     </Container>
