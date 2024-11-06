@@ -1,47 +1,45 @@
 import React from 'react';
 import styled from 'styled-components';
-import { FaRobot, FaClipboardList, FaImage } from "react-icons/fa";
 
 const MenuContainer = styled.div`
   display: flex;
   flex-direction: column;
-  width: 100%;
-  background-color: #f0f0f0;
+  width: 250px;
+  background-color: #2c3e50;
+  color: white;
+  height: 100vh;
 `;
 
 const MenuItem = styled.button`
   padding: 20px;
   font-size: 18px;
-  background-color: ${({ active }) => (active ? '#9B30FF' : '#fff')};
-  color: ${({ active }) => (active ? '#fff' : '#000')};
+  background-color: ${({ active }) => (active ? '#34495e' : 'transparent')};
+  color: ${({ active }) => (active ? '#f39c12' : '#ecf0f1')};
   border: none;
+  text-align: left;
   cursor: pointer;
-  margin: 5px 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
 
   &:hover {
-    background-color: #9B30FF;
-    color: #fff;
+    background-color: #34495e;
   }
 `;
 
-const MenuBar = ({ setActivePage, activePage }) => {
-  return (
-    <MenuContainer>
-      <MenuItem active={activePage === 'AIGen'} onClick={() => setActivePage('AIGen')}>
-        <FaRobot /> AI 자동 생성
-      </MenuItem>
-      <MenuItem active={activePage === 'MyPhotos'} onClick={() => setActivePage('MyPhotos')}>
-        <FaImage /> 내 사진
-      </MenuItem>
-      <MenuItem active={activePage === 'Template'} onClick={() => setActivePage('Template')}>
-        <FaClipboardList /> 추천 템플릿
-      </MenuItem>
-    </MenuContainer>
-  );
-};
+const MenuBar = ({ activePage, setActivePage }) => (
+  <MenuContainer>
+    <MenuItem active={activePage === 'MessageInput'} onClick={() => setActivePage('MessageInput')}>
+      메시지 입력
+    </MenuItem>
+    <MenuItem active={activePage === 'KeywordSelection'} onClick={() => setActivePage('KeywordSelection')}>
+      키워드 선택
+    </MenuItem>
+    <MenuItem active={activePage === 'Requirements'} onClick={() => setActivePage('Requirements')}>
+      요구사항
+    </MenuItem>
+    <MenuItem active={activePage === 'ImageEditing'} onClick={() => setActivePage('ImageEditing')}>
+      이미지 편집
+    </MenuItem>
+  </MenuContainer>
+);
 
 export default MenuBar;
 
