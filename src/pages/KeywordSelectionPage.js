@@ -4,7 +4,7 @@ import styled from 'styled-components';
 const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: 95vh; /* 세로 높이를 약간 줄임 */
   padding: 20px;
 `;
 
@@ -39,6 +39,8 @@ const KeywordContainer = styled.div`
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 20px;
+  max-height: 60%; /* 컨테이너 높이 제한 */
+  overflow-y: auto;
 `;
 
 const KeywordItem = styled.div`
@@ -76,7 +78,8 @@ const NavigationButton = styled.button`
   }
 `;
 
-const KeywordSelectionPage = ({ message, setActivePage, keywords, setKeywords }) => {
+const KeywordSelectionPage = ({ message, setActivePage }) => {
+  const [keywords, setKeywords] = useState([]);
   const [inputKeyword, setInputKeyword] = useState('');
 
   useEffect(() => {
@@ -84,7 +87,7 @@ const KeywordSelectionPage = ({ message, setActivePage, keywords, setKeywords })
       const extractedKeywords = extractKeywordsFromMessage(message);
       setKeywords(extractedKeywords);
     }
-  }, [message, setKeywords]);
+  }, [message]);
 
   const extractKeywordsFromMessage = (text) => {
     const words = text.split(/\s+/);
@@ -123,10 +126,13 @@ const KeywordSelectionPage = ({ message, setActivePage, keywords, setKeywords })
       </KeywordContainer>
       <ButtonContainer>
         <NavigationButton onClick={() => setActivePage('MessageInput')}>← 이전</NavigationButton>
-        <NavigationButton primary onClick={() => setActivePage('Requirements')}>선택 완료 →</NavigationButton>
+        <NavigationButton primary onClick={() => setActivePage('Requirements')}>
+          선택 완료 →
+        </NavigationButton>
       </ButtonContainer>
     </PageContainer>
   );
 };
 
 export default KeywordSelectionPage;
+

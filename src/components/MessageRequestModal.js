@@ -46,7 +46,9 @@ const MessageRequestModal = ({ onClose, onGenerate }) => {
   const [input, setInput] = useState('');
 
   const handleGenerate = () => {
-    onGenerate(input);
+    if (input.trim()) {
+      onGenerate(input); // 입력한 텍스트를 부모로 전달
+    }
   };
 
   return (
@@ -66,3 +68,4 @@ const MessageRequestModal = ({ onClose, onGenerate }) => {
 };
 
 export default MessageRequestModal;
+

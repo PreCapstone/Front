@@ -7,11 +7,9 @@ import ImageEditingPage from './pages/ImageEditingPage';
 
 const App = () => {
   const [activePage, setActivePage] = useState('MessageInput');
-  const [message, setMessage] = useState(''); // 메시지 상태
-  const [keywords, setKeywords] = useState([]); // 추출된 키워드 상태
-  const [requirement, setRequirement] = useState(''); // 요구사항 상태
-  const [imageHistory, setImageHistory] = useState([]); // 생성된 이미지 히스토리
-  const [generatedImage, setGeneratedImage] = useState(null); // Stable Diffusion으로 생성된 이미지
+  const [message, setMessage] = useState('');
+  const [imageHistory, setImageHistory] = useState([]); 
+  const [generatedImage, setGeneratedImage] = useState(null);
 
   const renderPage = () => {
     switch (activePage) {
@@ -19,26 +17,17 @@ const App = () => {
         return (
           <MessageInputPage
             setActivePage={setActivePage}
-            message={message}
             setMessage={setMessage}
+            message={message}
           />
         );
       case 'KeywordSelection':
-        return (
-          <KeywordSelectionPage
-            setActivePage={setActivePage}
-            message={message}
-            keywords={keywords}
-            setKeywords={setKeywords}
-          />
-        );
+        return <KeywordSelectionPage setActivePage={setActivePage} />;
       case 'Requirements':
         return (
           <RequirementsPage
             setActivePage={setActivePage}
-            requirement={requirement}
-            setRequirement={setRequirement}
-            setGeneratedImage={setGeneratedImage} // 이미지 생성 후 상태 업데이트
+            setGeneratedImage={setGeneratedImage}
           />
         );
       case 'ImageEditing':
@@ -47,10 +36,11 @@ const App = () => {
             generatedImage={generatedImage}
             imageHistory={imageHistory}
             setImageHistory={setImageHistory}
+            setActivePage={setActivePage}
           />
         );
       default:
-        return <MessageInputPage setActivePage={setActivePage} />;
+        return <MessageInputPage setActivePage={setActivePage} setMessage={setMessage} />;
     }
   };
 
@@ -63,9 +53,6 @@ const App = () => {
 };
 
 export default App;
-
-
-
 
 
 

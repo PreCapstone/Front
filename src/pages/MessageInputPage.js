@@ -44,13 +44,15 @@ const ActionButton = styled.button`
   }
 `;
 
-const MessageInputPage = ({ setActivePage, message, setMessage }) => {
+const MessageInputPage = ({ setActivePage, setMessage, message }) => {
+  const [generatedMessage, setGeneratedMessage] = useState('');
   const [messageHistory, setMessageHistory] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleGenerateMessage = (generatedMessage) => {
-    setMessage(generatedMessage);
-    setMessageHistory([generatedMessage, ...messageHistory]);
+  const handleGenerateMessage = (newMessage) => {
+    setGeneratedMessage(newMessage);
+    setMessage(newMessage); // 부모 컴포넌트의 message 상태 업데이트
+    setMessageHistory([newMessage, ...messageHistory]);
     setIsModalOpen(false);
   };
 
@@ -58,8 +60,13 @@ const MessageInputPage = ({ setActivePage, message, setMessage }) => {
     <PageContainer>
       <ContentArea>
         <LeftPane>
-          <MessageInput message={message} setMessage={setMessage} />
-          <ActionButton onClick={() => setIsModalOpen(true)}>메시지 자동 생성</ActionButton>
+          <MessageInput
+            message={generatedMessage || message}
+            setMessage={setGeneratedMessage}
+          />
+          <ActionButton onClick={() => setIsModalOpen(true)}>
+            메시지 자동 생성
+          </ActionButton>
         </LeftPane>
         <RightPane>
           <MessageHistory messages={messageHistory} />
@@ -67,7 +74,9 @@ const MessageInputPage = ({ setActivePage, message, setMessage }) => {
       </ContentArea>
       <ButtonContainer>
         <ActionButton>메시지만 사용하기</ActionButton>
-        <ActionButton primary onClick={() => setActivePage('KeywordSelection')}>입력 완료</ActionButton>
+        <ActionButton primary onClick={() => setActivePage('KeywordSelection')}>
+          입력 완료
+        </ActionButton>
       </ButtonContainer>
 
       {isModalOpen && (
@@ -83,6 +92,5 @@ const MessageInputPage = ({ setActivePage, message, setMessage }) => {
 };
 
 export default MessageInputPage;
-
 
 

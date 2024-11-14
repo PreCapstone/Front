@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
 const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: 95vh;
   padding: 20px;
 `;
 
 const Textarea = styled.textarea`
   width: 100%;
-  height: 100px;
+  height: 80px;
   padding: 10px;
   font-size: 16px;
   border: 1px solid #ccc;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   resize: none;
 `;
 
@@ -25,25 +25,27 @@ const ByteCount = styled.div`
   margin-bottom: 20px;
 `;
 
-const SampleImagesContainer = styled.div`
+const SampleImageContainer = styled.div`
   display: flex;
   gap: 10px;
   overflow-x: auto;
+  margin-bottom: 20px;
 `;
 
 const SampleImage = styled.img`
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
+  width: 120px;
+  height: 120px;
+  border: 1px solid #ccc;
   cursor: pointer;
-  border: ${({ isSelected }) => (isSelected ? '3px solid #6a1bb3' : '1px solid #ccc')};
-  border-radius: 5px;
+
+  &:hover {
+    border-color: #6a1bb3;
+  }
 `;
 
 const ButtonContainer = styled.div`
   display: flex;
   justify-content: space-between;
-  margin-top: auto;
 `;
 
 const ActionButton = styled.button`
@@ -59,50 +61,49 @@ const ActionButton = styled.button`
   }
 `;
 
-const RequirementsPage = ({ setActivePage, requirement, setRequirement, setSampleImage }) => {
-  const [selectedImage, setSelectedImage] = useState(null);
+const RequirementsPage = ({ 
+  setActivePage, 
+  requirement, 
+  setRequirement, 
+  sampleImages = [], // 기본값으로 빈 배열 설정
+  setGeneratedImage 
+}) => {
+  const handleTextareaChange = (e) => {
+    setRequirement(e.target.value); 
+  };
 
-  const sampleImages = [
-    'https://via.placeholder.com/100', 
-    'https://via.placeholder.com/101', 
-    'https://via.placeholder.com/102'
-  ];
-
-  const handleSelectImage = (image) => {
-    setSelectedImage(image);
-    setSampleImage(image); // 선택된 이미지 전달
+  const handleImageClick = (image) => {
+    setGeneratedImage(image); 
   };
 
   return (
     <PageContainer>
-      <h2>요구사항을 적어주세요</h2>
+      <h1>요구사항을 적어주세요</h1>
       <Textarea
         value={requirement}
-        onChange={(e) => setRequirement(e.target.value)}
+        onChange={handleTextareaChange}
         placeholder="요구사항을 입력해주세요."
       />
-      <ByteCount>{new TextEncoder().encode(requirement).length} / 200 bytes</ByteCount>
-
-      <h3>샘플 이미지 선택 (선택 사항)</h3>
-      <SampleImagesContainer>
+      <ByteCount>{new TextEncoder().encode(requirement).length} / 200byte</ByteCount>
+      <SampleImageContainer>
         {sampleImages.map((img, index) => (
           <SampleImage
             key={index}
             src={img}
-            alt={`샘플 ${index + 1}`}
-            isSelected={selectedImage === img}
-            onClick={() => handleSelectImage(img)}
+            alt={`샘플 ${index}`}
+            onClick={() => handleImageClick(img)}
           />
         ))}
-      </SampleImagesContainer>
-
+      </SampleImageContainer>
       <ButtonContainer>
         <ActionButton onClick={() => setActivePage('KeywordSelection')}>← 이전</ActionButton>
-        <ActionButton primary onClick={() => setActivePage('ImageEditing')}>이미지 생성</ActionButton>
+        <ActionButton primary onClick={() => alert('이미지 생성!')}>이미지 생성</ActionButton>
       </ButtonContainer>
     </PageContainer>
   );
 };
 
 export default RequirementsPage;
+
+
 
