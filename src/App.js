@@ -4,7 +4,7 @@ import MessageInputPage from './pages/MessageInputPage';
 import KeywordSelectionPage from './pages/KeywordSelectionPage';
 import RequirementsPage from './pages/RequirementsPage';
 import ImageEditingPage from './pages/ImageEditingPage';
-import SMSPage from './pages/SMSPage'; // SMSPage 추가
+import SMSPage from './pages/MessageSendPage';
 
 const App = () => {
   const [activePage, setActivePage] = useState('MessageInput');

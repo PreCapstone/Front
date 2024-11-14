@@ -8,7 +8,14 @@ const Textarea = styled.textarea`
   font-size: 16px;
   border: 1px solid #ccc;
   resize: none;
-  color: ${({ isOverLimit }) => (isOverLimit ? 'red' : 'black')};
+  color: black;
+`;
+
+const ByteCount = styled.p`
+  font-size: 14px;
+  text-align: right;
+  margin: 5px 0;
+  color: ${({ isOverLimit }) => (isOverLimit ? 'red' : '#666')};
 `;
 
 const MessageInput = ({ message, setMessage }) => {
@@ -21,10 +28,11 @@ const MessageInput = ({ message, setMessage }) => {
       <Textarea
         value={message}
         onChange={(e) => setMessage(e.target.value)}
-        isOverLimit={isOverLimit}
         placeholder="메시지를 입력하세요"
       />
-      <p>{byteCount} / 80 bytes</p>
+      <ByteCount isOverLimit={isOverLimit}>
+        {byteCount} / 80 bytes
+      </ByteCount>
     </div>
   );
 };

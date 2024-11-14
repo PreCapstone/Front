@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { sendSMS, sendMMS } from '../services/messageService'; // 서비스 임포트
 
 const PageContainer = styled.div`
   display: flex;
@@ -79,6 +80,11 @@ const SubmitButton = styled.button`
   cursor: pointer;
   width: 100%;
   margin-bottom: 10px;
+
+  &:disabled {
+    background-color: grey;
+    cursor: not-allowed;
+  }
 `;
 
 const BackButton = styled.button`
@@ -124,8 +130,8 @@ const RemoveButton = styled.button`
   }
 `;
 
-const SMSPage = ({ setActivePage, previousMessage }) => {
-  const [message, setMessage] = useState(previousMessage);
+const MessageSendPage = ({ setActivePage, previousMessage }) => {
+  const [message] = useState(previousMessage);
   const [title, setTitle] = useState('');
   const [phoneNumber, setPhoneNumber] = useState({
     part1: '',
@@ -133,6 +139,7 @@ const SMSPage = ({ setActivePage, previousMessage }) => {
     part3: '',
   });
   const [recipients, setRecipients] = useState([]);
+  const [isSending, setIsSending] = useState(false);
 
   const handlePhoneNumberChange = (e, part) => {
     setPhoneNumber({
@@ -143,14 +150,36 @@ const SMSPage = ({ setActivePage, previousMessage }) => {
 
   const handleAddPhoneNumber = () => {
     const fullNumber = `${phoneNumber.part1}-${phoneNumber.part2}-${phoneNumber.part3}`;
-    if (!recipients.includes(fullNumber) && fullNumber.replace(/-/g, '').length === 11) {
+    if (
+      !recipients.includes(fullNumber) &&
+      fullNumber.replace(/-/g, '').length === 11
+    ) {
       setRecipients([...recipients, fullNumber]);
-      setPhoneNumber({ part1: '', part2: '', part3: '' }); // 입력칸 초기화
+      setPhoneNumber({ part1: '', part2: '', part3: '' });
     }
   };
 
   const handleRemoveRecipient = (number) => {
     setRecipients(recipients.filter((recipient) => recipient !== number));
+  };
+
+  const handleSendMessage = async () => {
+    setIsSending(true);
+    try {
+      const byteCount = new TextEncoder().encode(message).length;
+      await Promise.all(
+        recipients.map((recipient) =>
+          byteCount > 80
+            ? sendMMS(recipient, title, message)
+            : sendSMS(recipient, title, message)
+        )
+      );
+      alert('모든 메시지 전송 성공!');
+    } catch (error) {
+      alert('일부 메시지 전송 실패: ' + error.message);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
@@ -163,13 +192,8 @@ const SMSPage = ({ setActivePage, previousMessage }) => {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
-          <Textarea
-            placeholder="메시지를 입력하세요."
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-          />
+          <Textarea value={message} readOnly />
         </LeftPane>
-
         <RightPane>
           <NumberInputSection>
             <SubSectionTitle>번호 입력</SubSectionTitle>
@@ -195,25 +219,34 @@ const SMSPage = ({ setActivePage, previousMessage }) => {
             </NumberInputGroup>
             <SubmitButton onClick={handleAddPhoneNumber}>번호 추가</SubmitButton>
           </NumberInputSection>
-
           <NumberInputSection>
             <SubSectionTitle>받는 사람</SubSectionTitle>
             <RecipientList>
               {recipients.map((recipient, index) => (
                 <RecipientItem key={index}>
                   {recipient}
-                  <RemoveButton onClick={() => handleRemoveRecipient(recipient)}>X</RemoveButton>
+                  <RemoveButton
+                    onClick={() => handleRemoveRecipient(recipient)}
+                  >
+                    X
+                  </RemoveButton>
                 </RecipientItem>
               ))}
             </RecipientList>
-            <SubmitButton>발송하기</SubmitButton>
+            <SubmitButton
+              onClick={handleSendMessage}
+              disabled={recipients.length === 0 || isSending}
+            >
+              {isSending ? '전송 중...' : '발송하기'}
+            </SubmitButton>
           </NumberInputSection>
         </RightPane>
       </FormContainer>
-
-      <BackButton onClick={() => setActivePage('MessageInput')}>뒤로가기</BackButton>
+      <BackButton onClick={() => setActivePage('MessageInput')}>
+        뒤로가기
+      </BackButton>
     </PageContainer>
   );
 };
 
-export default SMSPage;
+export default MessageSendPage;
