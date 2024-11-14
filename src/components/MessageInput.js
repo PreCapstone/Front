@@ -30,5 +30,3 @@ const MessageInput = ({ message, setMessage }) => {
 };
 
 export default MessageInput;
-
-

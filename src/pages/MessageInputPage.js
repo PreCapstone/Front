@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import MessageInput from '../components/MessageInput';
+import MessageInput from '../components/MessageInput'; // 수정된 경로
 import MessageHistory from '../components/MessageHistory';
 import ModalOverlay from '../components/ModalOverlay';
-import MessageRequestModal from '../components/MessageRequestModal';
+import MessageRequestModal from '../components/MessageRequestModal'; // 자동 생성 모달 추가
 
 const PageContainer = styled.div`
   display: flex;
@@ -45,25 +45,20 @@ const ActionButton = styled.button`
 `;
 
 const MessageInputPage = ({ setActivePage, setMessage, message }) => {
-  const [generatedMessage, setGeneratedMessage] = useState('');
   const [messageHistory, setMessageHistory] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false); // 메시지 자동 생성 모달 상태
 
   const handleGenerateMessage = (newMessage) => {
-    setGeneratedMessage(newMessage);
     setMessage(newMessage); // 부모 컴포넌트의 message 상태 업데이트
-    setMessageHistory([newMessage, ...messageHistory]);
-    setIsModalOpen(false);
+    setMessageHistory([newMessage, ...messageHistory]); // 메시지 히스토리에 추가
+    setIsModalOpen(false); // 모달 닫기
   };
 
   return (
     <PageContainer>
       <ContentArea>
         <LeftPane>
-          <MessageInput
-            message={generatedMessage || message}
-            setMessage={setGeneratedMessage}
-          />
+          <MessageInput message={message} setMessage={setMessage} />
           <ActionButton onClick={() => setIsModalOpen(true)}>
             메시지 자동 생성
           </ActionButton>
@@ -73,7 +68,9 @@ const MessageInputPage = ({ setActivePage, setMessage, message }) => {
         </RightPane>
       </ContentArea>
       <ButtonContainer>
-        <ActionButton>메시지만 사용하기</ActionButton>
+        <ActionButton onClick={() => setActivePage('SMSPage')}>
+          메시지만 사용하기
+        </ActionButton>
         <ActionButton primary onClick={() => setActivePage('KeywordSelection')}>
           입력 완료
         </ActionButton>
