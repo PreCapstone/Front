@@ -5,7 +5,6 @@ const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 20px;
 `;
 
 const FormContainer = styled.div`
@@ -22,6 +21,11 @@ const LeftPane = styled.div`
 const RightPane = styled.div`
   flex: 1;
   padding-left: 20px;
+`;
+
+const SectionTitle = styled.h2`
+  font-size: 24px;
+  margin-bottom: 20px;
 `;
 
 const Input = styled.input`
@@ -41,13 +45,16 @@ const Textarea = styled.textarea`
   border: 1px solid #ccc;
   margin-bottom: 10px;
   resize: none;
+  background-color: #f5f5f5;
+  pointer-events: none; /* 수정 불가능 */
+  color: #333;
 `;
 
 const NumberInputSection = styled.div`
   margin-bottom: 20px;
 `;
 
-const SectionTitle = styled.h3`
+const SubSectionTitle = styled.h3`
   margin-bottom: 10px;
 `;
 
@@ -92,7 +99,7 @@ const RecipientList = styled.div`
   gap: 5px;
   max-height: 100px;
   overflow-y: auto;
-  margin-bottom: 20px; /* 간격 추가 */
+  margin-bottom: 20px;
 `;
 
 const RecipientItem = styled.div`
@@ -150,6 +157,7 @@ const SMSPage = ({ setActivePage, previousMessage }) => {
     <PageContainer>
       <FormContainer>
         <LeftPane>
+          <SectionTitle>메시지 전송</SectionTitle>
           <Input
             placeholder="제목을 입력하세요."
             value={title}
@@ -160,12 +168,11 @@ const SMSPage = ({ setActivePage, previousMessage }) => {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
           />
-          <SubmitButton>메시지 수정</SubmitButton>
         </LeftPane>
 
         <RightPane>
           <NumberInputSection>
-            <SectionTitle>번호 입력</SectionTitle>
+            <SubSectionTitle>번호 입력</SubSectionTitle>
             <NumberInputGroup>
               <input
                 type="text"
@@ -190,7 +197,7 @@ const SMSPage = ({ setActivePage, previousMessage }) => {
           </NumberInputSection>
 
           <NumberInputSection>
-            <SectionTitle>받는 사람</SectionTitle>
+            <SubSectionTitle>받는 사람</SubSectionTitle>
             <RecipientList>
               {recipients.map((recipient, index) => (
                 <RecipientItem key={index}>

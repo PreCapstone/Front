@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { FaTimes } from 'react-icons/fa';
+import { generateGPTMessage } from '../services/gptService';
 
 const ModalContainer = styled.div`
   background: white;
@@ -44,10 +45,20 @@ const Button = styled.button`
 
 const MessageRequestModal = ({ onClose, onGenerate }) => {
   const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleGenerate = () => {
-    if (input.trim()) {
-      onGenerate(input); // 입력한 텍스트를 부모로 전달
+  const handleGenerate = async () => {
+    if (!input.trim()) return;
+
+    setLoading(true);
+    try {
+      const generatedMessage = await generateGPTMessage(input);
+      onGenerate(generatedMessage);
+    } catch (error) {
+      alert('메시지 생성에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setLoading(false);
+      onClose();
     }
   };
 
@@ -62,10 +73,11 @@ const MessageRequestModal = ({ onClose, onGenerate }) => {
         onChange={(e) => setInput(e.target.value)}
         placeholder="요청사항을 입력하세요..."
       />
-      <Button onClick={handleGenerate}>메시지 자동 생성</Button>
+      <Button onClick={handleGenerate} disabled={loading}>
+        {loading ? '생성 중...' : '메시지 자동 생성'}
+      </Button>
     </ModalContainer>
   );
 };
 
 export default MessageRequestModal;
-

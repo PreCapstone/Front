@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import MessageInput from '../components/MessageInput'; // 수정된 경로
+import MessageInput from '../components/MessageInput';
 import MessageHistory from '../components/MessageHistory';
 import ModalOverlay from '../components/ModalOverlay';
-import MessageRequestModal from '../components/MessageRequestModal'; // 자동 생성 모달 추가
+import MessageRequestModal from '../components/MessageRequestModal';
 
 const PageContainer = styled.div`
   display: flex;
@@ -46,12 +46,12 @@ const ActionButton = styled.button`
 
 const MessageInputPage = ({ setActivePage, setMessage, message }) => {
   const [messageHistory, setMessageHistory] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false); // 메시지 자동 생성 모달 상태
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleGenerateMessage = (newMessage) => {
-    setMessage(newMessage); // 부모 컴포넌트의 message 상태 업데이트
-    setMessageHistory([newMessage, ...messageHistory]); // 메시지 히스토리에 추가
-    setIsModalOpen(false); // 모달 닫기
+    setMessage(newMessage);
+    setMessageHistory([newMessage, ...messageHistory]);
+    setIsModalOpen(false);
   };
 
   return (
@@ -68,12 +68,8 @@ const MessageInputPage = ({ setActivePage, setMessage, message }) => {
         </RightPane>
       </ContentArea>
       <ButtonContainer>
-        <ActionButton onClick={() => setActivePage('SMSPage')}>
-          메시지만 사용하기
-        </ActionButton>
-        <ActionButton primary onClick={() => setActivePage('KeywordSelection')}>
-          입력 완료
-        </ActionButton>
+        <ActionButton onClick={() => setActivePage('SMSPage')}>메시지만 사용하기</ActionButton>
+        <ActionButton primary onClick={() => setActivePage('KeywordSelection')}>입력 완료</ActionButton>
       </ButtonContainer>
 
       {isModalOpen && (
@@ -89,5 +85,3 @@ const MessageInputPage = ({ setActivePage, setMessage, message }) => {
 };
 
 export default MessageInputPage;
-
-
