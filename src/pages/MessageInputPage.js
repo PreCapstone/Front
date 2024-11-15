@@ -1,3 +1,4 @@
+// MessageInputPage.js
 import React, { useState } from 'react';
 import MessageInput from '../components/MessageInput';
 import MessageHistory from '../components/MessageHistory';
@@ -11,75 +12,114 @@ import {
   TitleContainer,
   Title, 
   ContentWrapper,
-  OverlayDiv, // 새로 추가된 스타일 컴포넌트
+  OverlayDiv,
+  ButtonContainer,
+  HintText,
 } from '../style/MessageInputPageStyles';
 
 const MessageInputPage = ({ setActivePage, setMessage, message }) => {
+  // State 관리
   const [messageHistory, setMessageHistory] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isActive, setIsActive] = useState(false);  // hover 상태 관리
-  const [showOverlay, setShowOverlay] = useState(false); // overlay 표시 상태 관리
+  const [leftPaneState, setLeftPaneState] = useState({
+    isActive: false,
+    showOverlay: false,
+  });
+  const [rightPaneState, setRightPaneState] = useState({
+    isActive: false,
+    showOverlay: false,
+  });
 
+  // 이벤트 핸들러
   const handleGenerateMessage = (newMessage) => {
     setMessage(newMessage);
     setMessageHistory([newMessage, ...messageHistory]);
     setIsModalOpen(false);
   };
 
-  // 마우스가 Pane에 들어왔을 때 실행되는 함수
-  const handleMouseEnter = () => {
-    setIsActive(true);
-    setShowOverlay(false); // overlay 숨김
+  // 왼쪽 패널 마우스 이벤트
+  const handleLeftMouseEnter = () => {
+    setLeftPaneState({
+      isActive: true,
+      showOverlay: false,
+    });
   };
 
-  // 마우스가 Pane에서 나갔을 때 실행되는 함수
-  const handleMouseLeave = () => {
-    setShowOverlay(true); // overlay 표시
+  const handleLeftMouseLeave = () => {
+    setLeftPaneState(prev => ({
+      ...prev,
+      showOverlay: true,
+    }));
+  };
+
+  // 오른쪽 패널 마우스 이벤트
+  const handleRightMouseEnter = () => {
+    setRightPaneState({
+      isActive: true,
+      showOverlay: false,
+    });
+  };
+
+  const handleRightMouseLeave = () => {
+    setRightPaneState(prev => ({
+      ...prev,
+      showOverlay: true,
+    }));
   };
 
   return (
     <PageContainer>
       <ContentArea>
+        {/* 왼쪽 패널 */}
         <Pane 
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          className={isActive ? 'active' : ''}
+          onMouseEnter={handleLeftMouseEnter}
+          onMouseLeave={handleLeftMouseLeave}
+          className={leftPaneState.isActive ? 'active' : ''}
         >
           <TitleContainer>
             <Title>메시지를</Title>
             <Title>입력하세요</Title>
           </TitleContainer>
+          <HintText>잘 안 떠오른다면 →</HintText>
           <ContentWrapper>
             <MessageInput message={message} setMessage={setMessage} />
+            <Button 
+              text="메시지만 사용하기"
+              onClick={() => setActivePage('SMSPage')}
+              backgroundColor="#ddd"
+              textColor="black"
+            />
+            <Button 
+              text="입력 완료"
+              onClick={() => setActivePage('KeywordSelection')}
+              backgroundColor="#6A1BB3"
+            />    
+          </ContentWrapper>
+          <ButtonContainer />
+          <OverlayDiv $show={leftPaneState.showOverlay} />
+        </Pane>
+
+        {/* 오른쪽 패널 */}
+        <Pane
+          onMouseEnter={handleRightMouseEnter}
+          onMouseLeave={handleRightMouseLeave}
+          className={rightPaneState.isActive ? 'active' : ''}
+        >
+          <TitleContainer>
+            <Title>AI 자동 생성</Title>
+          </TitleContainer>
+          <MessageHistory messages={messageHistory} />
+          <ButtonContainer>
             <Button 
               text="메시지 자동 생성"
               onClick={() => setIsModalOpen(true)}
             />
-          </ContentWrapper>
-          {/* 
-            showOverlay 상태가 true일 때 OverlayDiv를 렌더링합니다.
-            이 div는 Pane 위에 반투명한 회색 overlay를 생성합니다.
-          */}
-          <OverlayDiv $show={showOverlay} />
-        </Pane>
-        <Pane>
-          <MessageHistory messages={messageHistory} />
+          </ButtonContainer>
+          <OverlayDiv $show={rightPaneState.showOverlay} />
         </Pane>
       </ContentArea>
-      <div style={{ padding: '10px', display: 'flex', justifyContent: 'space-between' }}>
-        <Button 
-          text="메시지만 사용하기"
-          onClick={() => setActivePage('SMSPage')}
-          backgroundColor="#ddd"
-          textColor="black"
-        />
-        <Button 
-          text="입력 완료"
-          onClick={() => setActivePage('KeywordSelection')}
-          backgroundColor="#6A1BB3"
-        />
-      </div>
 
+      {/* 모달 */}
       {isModalOpen && (
         <ModalOverlay>
           <MessageRequestModal
