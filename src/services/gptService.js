@@ -7,7 +7,7 @@ import axios from 'axios';
  */
 export const generateGPTMessage = async (prompt) => {
   try {
-    const response = await axios.post('/api/generate-message', { prompt });
+    const response = await axios.post('${process.env.REACT_APP_SERVER_IP}/api/generate-message', { prompt });
     return response.data.message;
   } catch (error) {
     console.error('GPT 메시지 생성 실패:', error);

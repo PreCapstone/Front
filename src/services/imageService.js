@@ -7,7 +7,7 @@ import axios from 'axios';
  */
 export const generateImage = async (prompt) => {
   try {
-    const response = await axios.post('/api/stable-diffusion', { prompt });
+    const response = await axios.post('${process.env.REACT_APP_SERVER_IP}/api/stable-diffusion', { prompt });
     return response.data.imageURL;
   } catch (error) {
     console.error('이미지 생성 실패:', error);
