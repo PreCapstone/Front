@@ -1,82 +1,16 @@
+// components/KeywordSelectionPage.jsx
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-
-const PageContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: 95vh; /* 세로 높이를 약간 줄임 */
-  padding: 20px;
-`;
-
-const InputContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-`;
-
-const InputField = styled.input`
-  flex-grow: 1;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-`;
-
-const AddButton = styled.button`
-  padding: 10px 15px;
-  background-color: #6a1bb3;
-  color: white;
-  border: none;
-  cursor: pointer;
-  border-radius: 4px;
-
-  &:hover {
-    background-color: #531299;
-  }
-`;
-
-const KeywordContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 20px;
-  max-height: 60%; /* 컨테이너 높이 제한 */
-  overflow-y: auto;
-`;
-
-const KeywordItem = styled.div`
-  background-color: #e0e0e0;
-  padding: 10px 15px;
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-`;
-
-const RemoveButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 14px;
-  cursor: pointer;
-  color: red;
-`;
-
-const ButtonContainer = styled.div`
-  margin-top: auto;
-  display: flex;
-  justify-content: space-between;
-`;
-
-const NavigationButton = styled.button`
-  padding: 10px 20px;
-  background-color: ${({ primary }) => (primary ? '#6a1bb3' : '#ddd')};
-  color: ${({ primary }) => (primary ? 'white' : 'black')};
-  border: none;
-  cursor: pointer;
-  border-radius: 4px;
-
-  &:hover {
-    background-color: ${({ primary }) => (primary ? '#531299' : '#bbb')};
-  }
-`;
+import Button from '../components/Button.js';
+import {
+  PageContainer,
+  InputContainer,
+  InputField,
+  KeywordContainer,
+  KeywordItem,
+  RemoveButton,
+  ButtonContainer,
+  PageTitle
+} from '../style/KeywordSelectionPageStyles';
 
 const KeywordSelectionPage = ({ message, setActivePage }) => {
   const [keywords, setKeywords] = useState([]);
@@ -107,14 +41,18 @@ const KeywordSelectionPage = ({ message, setActivePage }) => {
 
   return (
     <PageContainer>
-      <h2>키워드 선택</h2>
+      <PageTitle>키워드 선택</PageTitle>
       <InputContainer>
         <InputField
           placeholder="키워드를 입력하세요"
           value={inputKeyword}
           onChange={(e) => setInputKeyword(e.target.value)}
         />
-        <AddButton onClick={handleAddKeyword}>+</AddButton>
+        <Button 
+          text="+" 
+          onClick={handleAddKeyword} 
+          backgroundColor="#6a1bb3"
+        />
       </InputContainer>
       <KeywordContainer>
         {keywords.map((keyword, index) => (
@@ -125,14 +63,20 @@ const KeywordSelectionPage = ({ message, setActivePage }) => {
         ))}
       </KeywordContainer>
       <ButtonContainer>
-        <NavigationButton onClick={() => setActivePage('MessageInput')}>← 이전</NavigationButton>
-        <NavigationButton primary onClick={() => setActivePage('Requirements')}>
-          선택 완료 →
-        </NavigationButton>
+        <Button 
+          text="← 이전" 
+          onClick={() => setActivePage('MessageInput')} 
+          backgroundColor="#ddd"
+          textColor="#333"
+        />
+        <Button 
+          text="선택 완료 →" 
+          onClick={() => setActivePage('Requirements')} 
+          backgroundColor="#6a1bb3"
+        />
       </ButtonContainer>
     </PageContainer>
   );
 };
 
 export default KeywordSelectionPage;
-
