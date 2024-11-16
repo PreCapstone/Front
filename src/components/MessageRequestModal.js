@@ -1,81 +1,63 @@
-import React, { useState } from 'react';
+// src/components/MessageRequestModal.js
+import React from 'react';
 import styled from 'styled-components';
-import { FaTimes } from 'react-icons/fa';
-import { generateGPTMessage } from '../services/gptService';
+import Button from './Button';
 
 const ModalContainer = styled.div`
   background: white;
-  padding: 20px;
-  width: 400px;
+  padding: 2rem;
   border-radius: 10px;
-  position: relative;
+  width: 80%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 `;
 
-const CloseButton = styled.button`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
-  border: none;
-  font-size: 18px;
-  cursor: pointer;
-  color: #888;
-
-  &:hover {
-    color: black;
-  }
+const MessageDisplay = styled.div`
+  padding: 1rem;
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+  min-height: 100px;
 `;
 
-const Textarea = styled.textarea`
-  width: 100%;
-  height: 100px;
-  padding: 10px;
-  margin-top: 20px;
+const ButtonGroup = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
 `;
 
-const Button = styled.button`
-  margin-top: 10px;
-  width: 100%;
-  padding: 10px;
-  background: #6a1bb3;
-  color: white;
-  border: none;
-  cursor: pointer;
-`;
-
-const MessageRequestModal = ({ onClose, onGenerate }) => {
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleGenerate = async () => {
-    if (!input.trim()) return;
-
-    setLoading(true);
-    try {
-      const generatedMessage = await generateGPTMessage(input);
-      onGenerate(generatedMessage);
-    } catch (error) {
-      alert('메시지 생성에 실패했습니다. 다시 시도해주세요.');
-    } finally {
-      setLoading(false);
-      onClose();
-    }
-  };
-
+const MessageRequestModal = ({ generatedMessage, originalMessage, onClose, onSelect }) => {
   return (
     <ModalContainer>
-      <CloseButton onClick={onClose}>
-        <FaTimes />
-      </CloseButton>
-      <h2>요청사항 입력</h2>
-      <Textarea
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="요청사항을 입력하세요..."
-      />
-      <Button onClick={handleGenerate} disabled={loading}>
-        {loading ? '생성 중...' : '메시지 자동 생성'}
-      </Button>
+      <h2>메시지 비교</h2>
+      <MessageDisplay>
+        <h3>원본 메시지</h3>
+        <p>{originalMessage}</p>
+      </MessageDisplay>
+      <MessageDisplay>
+        <h3>생성된 메시지</h3>
+        <p>{generatedMessage}</p>
+      </MessageDisplay>
+      <ButtonGroup>
+        <Button 
+          text="원본 사용" 
+          onClick={() => onSelect('original')}
+          backgroundColor="#ddd"
+          textColor="black"
+        />
+        <Button 
+          text="생성된 메시지 사용" 
+          onClick={() => onSelect('generated')}
+          backgroundColor="#6A1BB3"
+        />
+        <Button 
+          text="닫기" 
+          onClick={onClose}
+          backgroundColor="#ddd"
+          textColor="black"
+        />
+      </ButtonGroup>
     </ModalContainer>
   );
 };
