@@ -58,7 +58,7 @@ const App = () => {
       {activePage !== 'SMSPage' && (
         <MenuBar activePage={activePage} setActivePage={setActivePage} />
       )}
-      <div style={{ flexGrow: 1, padding: '20px' }}>{renderPage()}</div>
+      <div style={{ flexGrow: 1, padding: '0px' }}>{renderPage()}</div>
     </div>
   );
 };

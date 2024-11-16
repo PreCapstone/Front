@@ -1,0 +1,120 @@
+// src/components/GPTInputForm.jsx
+import React, { useState } from 'react';
+import styled from 'styled-components';
+import Button from './Button';
+
+const FormContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  // 질문간 거리
+  gap: 20px;
+  width: 100%;
+`;
+
+const InputGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  // 질문과 텍스트필드 사이 거리
+  gap: 5px;
+`;
+
+//질문
+const Label = styled.label`
+  font-size: 16px;
+  color: #333;
+  font-weight: 500;
+`;
+
+//답 받는 곳
+const TextField = styled.input`
+  width: 100%;
+  height: 18px;
+  padding: 10px;
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+  font-size: 16px;
+  
+  &:focus {
+    outline: none;
+    border-color: #6A1BB3;
+  }
+
+  &::placeholder {
+    color: #999;
+  }
+`;
+
+const inputFields = [
+  {
+    id: 'mood',
+    label: '어떤 분위기를 원하시나요?',
+    placeholder: '예: 친근한, 전문적인, 유머러스한'
+  },
+  {
+    id: 'target',
+    label: '어떤 타겟층이 있나요?',
+    placeholder: '예: 20-30대 직장인, 주부'
+  },
+  {
+    id: 'product',
+    label: '어떤 제품을 홍보하시나요?',
+    placeholder: '예: 화장품, 식품, 의류'
+  },
+  {
+    id: 'keywords',
+    label: '원하는 키워드가 있나요?',
+    placeholder: '예: 할인, 신제품, 한정판'
+  },
+  {
+    id: 'additional',
+    label: 'AI에게 전달할 추가 문장이 있나요?',
+    placeholder: '추가로 전달하고 싶은 내용을 입력하세요'
+  }
+];
+
+const ButtonContainer = styled.div`
+  margin-top: 20px;
+  width: 100%;
+`;
+
+const GPTInputForm = ({ onSubmit }) => {
+  const [formData, setFormData] = useState({
+    mood: '',
+    target: '',
+    product: '',
+    keywords: '',
+    additional: ''
+  });
+
+  const handleInputChange = (id, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [id]: value
+    }));
+  };
+
+  return (
+    <FormContainer>
+      {inputFields.map(field => (
+        <InputGroup key={field.id}>
+          <Label htmlFor={field.id}>{field.label}</Label>
+          <TextField
+            id={field.id}
+            value={formData[field.id]}
+            placeholder={field.placeholder}
+            onChange={(e) => handleInputChange(field.id, e.target.value)}
+          />
+        </InputGroup>
+      ))}
+      <ButtonContainer>
+        <Button 
+          text="메시지 자동 생성"
+          onClick={() => onSubmit(formData)}
+          backgroundColor="#6A1BB3"
+        />
+      </ButtonContainer>
+    </FormContainer>
+  );
+};
+
+export default GPTInputForm;
