@@ -4,15 +4,15 @@ import styled from 'styled-components';
 const MenuContainer = styled.div`
   display: flex;
   flex-direction: column;
-  width: 250px;
+  width: 13vw;
   background-color: #2c3e50;
   color: white;
   height: 100vh;
 `;
 
 const MenuItem = styled.button`
-  padding: 20px;
-  font-size: 18px;
+  padding: 1.25rem;
+  font-size: 1.125rem;
   background-color: ${({ active }) => (active ? '#34495e' : 'transparent')};
   color: ${({ active }) => (active ? '#f39c12' : '#ecf0f1')};
   border: none;
