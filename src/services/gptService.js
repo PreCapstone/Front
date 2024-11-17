@@ -11,17 +11,17 @@ export const createGPTMessage = async (formData) => {
   if (!formData || !formData.mood || !formData.target || !formData.product || !formData.keywords) {
     throw new Error('모든 필드를 입력해주세요.');
   }
-
   try {
     const response = await axios.post(
       `${process.env.REACT_APP_SERVER_IP}/GPT/api/create-message`,
       {
-        mood: formData.mood,
-        target: formData.target,
-        product: formData.product,
-        keyword: formData.keywords,
-        prompt: formData.additional || ''
-      }
+        "mood": formData.mood,
+        "target": formData.target,
+        "product": formData.product,
+        "keyword": formData.keywords,
+        "prompt": formData.additional || ''
+      },
+      
     );
     return response.data;
   } catch (error) {

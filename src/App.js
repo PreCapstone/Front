@@ -7,7 +7,6 @@ import ImageEditingPage from './pages/ImageEditingPage';
 import SMSPage from './pages/MessageSendPage';
 import LoginPage from './pages/LoginPage';  // 로그인 페이지
 import SignupPage from './pages/SignupPage';  // 회원가입 페이지
-
 const App = () => {
   const [activePage, setActivePage] = useState('LoginPage');
   const [message, setMessage] = useState(''); // 메시지 상태
