@@ -5,6 +5,7 @@ const PageContainer = styled.div`
   padding: 20px;
   display: flex;
   height: 100vh;
+  box-sizing: border-box;
 `;
 
 const ImageContainer = styled.div`
@@ -15,6 +16,7 @@ const ImageContainer = styled.div`
   justify-content: center;
   position: relative;
   padding: 20px;
+  box-sizing: border-box;
 `;
 
 const Image = styled.img`
@@ -57,6 +59,7 @@ const TextEditContainer = styled.div`
   display: flex;
   flex-direction: column;
   z-index: 10;
+  box-sizing: border-box;
 `;
 
 const StyleButtonsContainer = styled.div`
@@ -106,6 +109,7 @@ const HistoryPane = styled.div`
   overflow-y: auto;
   max-height: 80%; /* 이미지 높이에 맞춰 조정 */
   border: 1px solid #ddd;
+  box-sizing: border-box;
 `;
 
 const HistoryImage = styled.img`
@@ -166,6 +170,10 @@ const ImageEditingPage = ({
       ]);
       setTextInput('');
     }
+  };
+
+  const handleCompleteClick = () => {
+    setActivePage('ImageSendPage');  // ImageSendPage로 전환
   };
 
   const handleStyleChange = (style) => {
@@ -297,8 +305,6 @@ const ImageEditingPage = ({
           <ActionButton onClick={() => setShowTextEdit(!showTextEdit)}>
             텍스트 추가
           </ActionButton>
-          <ActionButton>스티커 추가</ActionButton>
-          <ActionButton>자르기</ActionButton>
         </ButtonGroup>
       </ImageContainer>
 
@@ -309,7 +315,7 @@ const ImageEditingPage = ({
         ))}
       </HistoryPane>
 
-      <BottomButton primary onClick={() => setActivePage('CompletePage')}>
+      <BottomButton primary onClick={handleCompleteClick}>
         제작 완료
       </BottomButton>
     </PageContainer>

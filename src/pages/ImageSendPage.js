@@ -4,25 +4,45 @@ import { sendSMS, sendMMS } from '../services/messageService'; // 서비스 임�
 
 const PageContainer = styled.div`
   display: flex;
-  flex-direction: column;
-  height: 100%;
+  flex-direction: row; /* 수평 배치 */
+  height: 100vh;
   padding: 20px;
-`;
-
-const FormContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  flex-grow: 1;
+  box-sizing: border-box;
 `;
 
 const LeftPane = styled.div`
   flex: 1;
-  padding-right: 20px;
+  padding: 20px;
+  box-sizing: border-box;
+  margin-right: 20px;
+`;
+
+const CenterPane = styled.div`
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+  margin-right: 20px;
+`;
+
+const ImagePlaceholder = styled.div`
+  width: 80%;
+  height: 200px; /* 원하는 이미지 크기에 맞춰 조정 */
+  background-color: #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #888;
+  border-radius: 5px;
 `;
 
 const RightPane = styled.div`
   flex: 1;
-  padding-left: 20px;
+  padding: 20px;
+  box-sizing: border-box;
 `;
 
 const SectionTitle = styled.h2`
@@ -70,6 +90,7 @@ const NumberInputGroup = styled.div`
     padding: 10px;
     font-size: 16px;
     border: 1px solid #ccc;
+    box-sizing: border-box;
   }
 `;
 
@@ -95,7 +116,7 @@ const BackButton = styled.button`
   border: none;
   cursor: pointer;
   width: 150px;
-  position: fixed;
+  position: absolute;
   bottom: 20px;
   left: 20px;
 `;
@@ -131,29 +152,6 @@ const RemoveButton = styled.button`
   }
 `;
 
-const CenterPane = styled.div`
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #f0f0f0;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  padding: 20px; /* 추가된 부분: 패딩을 추가하여 이미지 크기 조정 */
-`;
-
-const ImagePlaceholder = styled.div`
-  width: 80%;
-  height: 40%; /* 높이를 반으로 줄임 */
-  background-color: #e0e0e0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  color: #888;
-  border-radius: 5px;
-`;
-
 const ImageSendPage = ({ setActivePage, previousMessage }) => {
   const [message] = useState(previousMessage);
   const [title, setTitle] = useState('');
@@ -165,9 +163,6 @@ const ImageSendPage = ({ setActivePage, previousMessage }) => {
   const [recipients, setRecipients] = useState([]);
   const [isSending, setIsSending] = useState(false);
 
-  const byteCount = new TextEncoder().encode(message).length;
-  const isMMS = byteCount > 90;
-
   const handlePhoneNumberChange = (e, part) => {
     setPhoneNumber({
       ...phoneNumber,
@@ -176,10 +171,10 @@ const ImageSendPage = ({ setActivePage, previousMessage }) => {
   };
 
   const handleAddPhoneNumber = () => {
-    const fullNumber = `${phoneNumber.part1}-${phoneNumber.part2}-${phoneNumber.part3}`;
+    const fullNumber = `${phoneNumber.part1}${phoneNumber.part2}${phoneNumber.part3}`;
     if (
       !recipients.includes(fullNumber) &&
-      fullNumber.replace(/-/g, '').length === 11
+      fullNumber.length === 11
     ) {
       setRecipients([...recipients, fullNumber]);
       setPhoneNumber({ part1: '', part2: '', part3: '' });
@@ -195,9 +190,7 @@ const ImageSendPage = ({ setActivePage, previousMessage }) => {
     try {
       await Promise.all(
         recipients.map((recipient) =>
-          byteCount > 90
-            ? sendMMS(recipient, title, message)
-            : sendSMS(recipient, message)
+          sendMMS(recipient, title, message) // 무조건 sendMMS 호출
         )
       );
       alert('모든 메시지 전송 성공!');
@@ -210,64 +203,68 @@ const ImageSendPage = ({ setActivePage, previousMessage }) => {
 
   return (
     <PageContainer>
-      <FormContainer>
-        <LeftPane>
-          <SectionTitle>메시지 전송</SectionTitle>
-          <Input
+      <LeftPane>
+        <SectionTitle>메시지 전송</SectionTitle>
+        <Input
             placeholder="제목을 입력하세요."
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-          />
-          <Textarea value={message} readOnly />
-        </LeftPane>
-        <RightPane>
-          <NumberInputSection>
-            <SubSectionTitle>번호 입력</SubSectionTitle>
-            <NumberInputGroup>
-              <input
-                type="text"
-                maxLength="3"
-                value={phoneNumber.part1}
-                onChange={(e) => handlePhoneNumberChange(e, 'part1')}
-              />
-              <input
-                type="text"
-                maxLength="4"
-                value={phoneNumber.part2}
-                onChange={(e) => handlePhoneNumberChange(e, 'part2')}
-              />
-              <input
-                type="text"
-                maxLength="4"
-                value={phoneNumber.part3}
-                onChange={(e) => handlePhoneNumberChange(e, 'part3')}
-              />
-            </NumberInputGroup>
-            <SubmitButton onClick={handleAddPhoneNumber}>번호 추가</SubmitButton>
-          </NumberInputSection>
-          <NumberInputSection>
-            <SubSectionTitle>받는 사람</SubSectionTitle>
-            <RecipientList>
-              {recipients.map((recipient, index) => (
-                <RecipientItem key={index}>
-                  {recipient}
-                  <RemoveButton
-                    onClick={() => handleRemoveRecipient(recipient)}
-                  >
-                    X
-                  </RemoveButton>
-                </RecipientItem>
-              ))}
-            </RecipientList>
-            <SubmitButton
-              onClick={handleSendMessage}
-              disabled={recipients.length === 0 || isSending}
-            >
-              {isSending ? '전송 중...' : '발송하기'}
-            </SubmitButton>
-          </NumberInputSection>
-        </RightPane>
-      </FormContainer>
+        />
+        <Textarea value={message} readOnly />
+      </LeftPane>
+
+      <CenterPane>
+        <ImagePlaceholder>
+          <span>이미지를 첨부하세요.</span>
+        </ImagePlaceholder>
+      </CenterPane>
+
+      <RightPane>
+        <NumberInputSection>
+          <SubSectionTitle>번호 입력</SubSectionTitle>
+          <NumberInputGroup>
+            <input
+              type="text"
+              maxLength="3"
+              value={phoneNumber.part1}
+              onChange={(e) => handlePhoneNumberChange(e, 'part1')}
+            />
+            <input
+              type="text"
+              maxLength="4"
+              value={phoneNumber.part2}
+              onChange={(e) => handlePhoneNumberChange(e, 'part2')}
+            />
+            <input
+              type="text"
+              maxLength="4"
+              value={phoneNumber.part3}
+              onChange={(e) => handlePhoneNumberChange(e, 'part3')}
+            />
+          </NumberInputGroup>
+          <SubmitButton onClick={handleAddPhoneNumber}>번호 추가</SubmitButton>
+        </NumberInputSection>
+        <NumberInputSection>
+          <SubSectionTitle>받는 사람</SubSectionTitle>
+          <RecipientList>
+            {recipients.map((recipient, index) => (
+              <RecipientItem key={index}>
+                {recipient}
+                <RemoveButton onClick={() => handleRemoveRecipient(recipient)}>
+                  X
+                </RemoveButton>
+              </RecipientItem>
+            ))}
+          </RecipientList>
+          <SubmitButton
+            onClick={handleSendMessage}
+            disabled={recipients.length === 0 || isSending}
+          >
+            {isSending ? '전송 중...' : '발송하기'}
+          </SubmitButton>
+        </NumberInputSection>
+      </RightPane>
+
       <BackButton onClick={() => setActivePage('MessageInput')}>
         뒤로가기
       </BackButton>

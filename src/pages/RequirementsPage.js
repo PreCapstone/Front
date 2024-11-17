@@ -5,8 +5,9 @@ import { generateImage } from '../services/imageService'; // Stable Diffusion AP
 const PageContainer = styled.div`
     display: flex;
     flex-direction: column;
-    height: 95vh;
+    height: 100vh;
     padding: 20px;
+    box-sizing: border-box;
 `;
 
 const Textarea = styled.textarea`
