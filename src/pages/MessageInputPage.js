@@ -6,6 +6,7 @@ import MessageRequestModal from '../components/MessageRequestModal';
 import Button from '../components/Button';
 import GPTInputForm from '../components/GPTInputForm';
 import { createGPTMessage } from '../services/gptService';
+import Loader from '../loader/Loader';
 import { 
   PageContainer, 
   ContentArea, 
@@ -96,6 +97,7 @@ const MessageInputPage = ({ setActivePage, setMessage, message }) => {
     // styled-components를 사용하여 정의된 커스텀 컴포넌트기 때문에 이름 맘대로 지어도 되는 거임. 물론 스타일 코드에 관련된 스타일 있어야 에러 안 뜨겠지
     // style 코드에선 const PageContainer = styled.div`스타일내용` 이런 식으로 해놨는데 기본적으로 div지만 추가 스타일 적용됐다라는 뜻임
     <PageContainer>
+      {isLoading && <Loader/>}
       <ContentArea>
         {/* 왼쪽 패널 */}
         <Pane 
@@ -158,14 +160,14 @@ const MessageInputPage = ({ setActivePage, setMessage, message }) => {
       {/* 모달
       리액트식 if문 변형. isLoading이 참이면 모달창 띄우고 false되면 꺼라. 
       */}
-      {isLoading && (
+      {/* {isLoading && (
         <ModalOverlay>
           <div>메시지를 생성하고 있습니다...</div>
         </ModalOverlay>
-      )}
+      )} */}
       
       
-      {isModalOpen && !isLoading && (
+      {isModalOpen && (
         <ModalOverlay> 
           <MessageRequestModal
           // 복습 : 이 컴포넌트 부르면서 props로 내 message를 전달, 저기선 originalMessage라고 불리게 될 거임. 또 그거랑 별개ㅗㄹ 닫거나 뭔가를 선택하면 관련 기능 실행할거임.
