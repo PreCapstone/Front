@@ -10,6 +10,7 @@ import SignupPage from './pages/SignupPage';  // 회원가입 페이지
 const App = () => {
   const [activePage, setActivePage] = useState('LoginPage');
   const [message, setMessage] = useState(''); // 메시지 상태
+  const [requirement, setRequirement] = useState(''); // 요구사항 상태 추가
   const [imageHistory, setImageHistory] = useState([]);
   const [generatedImage, setGeneratedImage] = useState(null);
 
@@ -40,8 +41,10 @@ const App = () => {
       case 'Requirements':
         return (
           <RequirementsPage
-            setActivePage={setActivePage}
-            setGeneratedImage={setGeneratedImage}
+              setActivePage={setActivePage}
+              setRequirement={setRequirement} // 전달
+              requirement={requirement}      // 전달
+              setGeneratedImage={setGeneratedImage}
           />
         );
       case 'ImageEditing':
