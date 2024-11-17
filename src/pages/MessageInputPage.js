@@ -15,7 +15,6 @@ import {
   Title, 
   ContentWrapper,
   OverlayDiv,
-  ButtonContainer,
   HintText,
 } from '../style/MessageInputPageStyles';
 
@@ -129,7 +128,6 @@ const MessageInputPage = ({ setActivePage, setMessage, message }) => {
               backgroundColor="#6A1BB3"
             />    
           </ContentWrapper>
-          <ButtonContainer />
           {/* $ : 해당 prop이 실제 DOM 요소에 전달되지 않고, 오직 스타일링 목적으로만 사용됨을 나타냄 (DOM은 웹 페이지 구조 표현하는 애. HTML 요소로 전달 안 된다는 소리)
           마우스 어딨냐에 따라 위에서 showOverlay 변경됐는데 그걸 그대로 따라감, $show에 따라 style에서 overlay 투명도 변경
           showOverlay 직접 안 주고 $show로 주는 이유 : style에서 showOverlay 직접 다루면 DOM에 영향 주거나 충돌할 수도 있음. 코드 가독성상 좋음.

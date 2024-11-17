@@ -3,6 +3,11 @@
 // JavaScript 파일 내에서 CSS를 작성하는 접근 방식
 // 안 쓰고 일반 css 방식 썼으면 아마 다 클래스 명으로 접근했을 거임 
 
+// vw, vh : 브라우저 크기. 부모 크기 무시!!
+// em, rem : em은 부모 크기 비례, rem은 루트 조상 크기 비례. 내가 손자면 em은 두 번 적용되지만 rem은 한 번만 적용됨. (em은 부모의 크기를 곱해서 계산하고 rem은 기본값을 곱해서 계산. rem 쓰는 게 훨씬 편해보임)
+// % : 부모 요소의 몇%
+// vw vh는 스크롤바도 뷰포트로 보기 떄문에 추가적인 영역을 그려서 스크롤해서 봐야할수도 있음, %는 안 그럼.
+
 import styled, { keyframes } from 'styled-components';
 
 // 글자수보단 그냥 width 기준으로 하자... 
@@ -19,31 +24,31 @@ const cursorBlink = keyframes`
   51%, 100% { border-color: transparent }
 `;
 
-// 제일 바깥 컨테이너부터
+// 제일 바깥 컨테이너부터. 메뉴바 제외하고 width 100%
 export const PageContainer = styled.div`
-  display: flex;
-  flex-direction: column;
+  width: 100%;
   height: 100vh;
+  display: flex;
 `;
 
 export const ContentArea = styled.div`
   display: flex;
-  flex-grow: 1;
-  position: relative;
+  height: 100%;
+  width: 100%
 `;
 
 // 여러 Title 한 번에 관리하는 title container. 마진은 상 우 하 좌 순서였던 걸로 기억
 export const TitleContainer = styled.div`
-  display: flex;
+display: flex;
   flex-direction: column;
   align-items: flex-start;
-  margin: 50px auto;
-  width: 100%;  // 컨테이너의 전체 너비 설정
-  padding: 0 20px;  // 좌우 패딩 추가
+  margin: 3.125rem;
+  width: 100%;
+  padding: 0 1.25rem;
 `;
 
 export const Title = styled.h2`
-  font-size: 4.5em;
+  font-size: 3.75vw;
   color: #6A1BB3;
   opacity: 0;
   text-align: left;
@@ -53,17 +58,15 @@ export const Title = styled.h2`
   width: 0;
   // 이게 꼭 있어야 안드로메다 가는 커서 방지됨
   max-width: max-content;
-  margin: 0.2em 0;
+  margin: 0.9rem 0;
 `;
 
 // 잘 안 떠오른다면-> 부분
 export const HintText = styled.h2`
-  position: absolute;
-  right: 20px;
-  top: 32.5%;
+  font-size: 1.28vw;
+  margin: 0 0 0 72%;
   transform: translateY(-50%);
   opacity: 0;
-  z-index: 1;
 `;
 
 export const ContentWrapper = styled.div`
@@ -71,13 +74,13 @@ export const ContentWrapper = styled.div`
   transform: translateY(20px);
   transition: all 0.5s ease-in-out;
   width: calc(100% - 40px); // 좌우 여백 20px씩 확보
-  margin: 0 20px; // 좌우 마진 추가
+  margin: 0 1.7em 0 0 ; // 좌우 마진 추가
 `;
 
 // 애니메이션 때문에 얜 밑으로 (초기화 전 접근 불가 문제)
 export const Pane = styled.div`
   width: 50%;
-  padding: 20px;
+  padding: 1.25rem 1.25rem 1.25rem 2.25rem;
   transition: all 0.3s ease;
   position: relative;
   display: flex;
@@ -91,6 +94,7 @@ export const Pane = styled.div`
   // forwards : 마지막 키프레임 스타일 유지 (불투명했다면 계속 불투명하게) <-> backwards
   // 0.7s step-end 3 : 0.7초 애니메이션 3번 반복, 단계 끝에서 갑작스럽게 바뀌기(step-end) <-> step-start
   // 참고 키워드 > infinite : 무한반복. linear: 일정 속도로 진행. ease 관련 : 중간에 속도 변화.
+  
   &:hover, &.active {
     ${Title}:first-child {
       opacity: 1;
@@ -134,12 +138,4 @@ export const OverlayDiv = styled.div`
   opacity: ${props => props.$show ? 0.5 : 0};
   z-index: 1;
   transition: opacity 0.5s ease;
-`;
-
-// 부모 요소가 display: flex;와 flex-direction: column;을 가지고 있다면, margin-top: auto;는 해당 요소를 가능한 한 아래로 밀어냄.
-// 당연한 소리긴 함, 부모가 위쪽 공간을 다 먹고 있고 내 margin은 자동이라면 당연히 제일 밑에 찌그러지게 됨
-export const ButtonContainer = styled.div`
-  width: 100%;
-  padding: 20px;
-  margin-top: auto; // Pane 하단에 고정
 `;

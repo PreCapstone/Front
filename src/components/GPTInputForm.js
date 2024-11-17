@@ -6,33 +6,28 @@ import Button from './Button';
 const FormContainer = styled.div`
   display: flex;
   flex-direction: column;
-  // 질문간 거리
-  gap: 20px;
+  gap: 2vh;
   width: 100%;
 `;
 
 const InputGroup = styled.div`
   display: flex;
   flex-direction: column;
-  // 질문과 텍스트필드 사이 거리
-  gap: 5px;
+  gap: 0.5vh;
 `;
 
-//질문
 const Label = styled.label`
-  font-size: 16px;
+  font-size: 0.85vw; 
   color: #333;
   font-weight: 500;
 `;
 
-//답 받는 곳
 const TextField = styled.input`
   width: 100%;
-  height: 18px;
-  padding: 10px;
-  border: 1px solid #E0E0E0;
-  border-radius: 8px;
-  font-size: 16px;
+  padding: 1vh 1vw;
+  border: 0.1vh solid #E0E0E0;
+  border-radius: 0.5vw;
+  font-size: 0.8vw;
   
   &:focus {
     outline: none;
