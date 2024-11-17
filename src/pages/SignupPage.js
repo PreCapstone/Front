@@ -2,14 +2,14 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { signup } from '../services/authService';
-
+import Typewriter from 'typewriter-effect';
 const SignupContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100vh;
-  background-color: #2A2977;
+  background: linear-gradient(180deg, #101938 0%, #5D3784 100%);
   color: white;
 `;
 
@@ -47,6 +47,7 @@ const Button = styled.button`
   }
 `;
 
+
 const BackButton = styled(Button)`
   background-color: gray;
   margin-top: 10px;
@@ -54,6 +55,65 @@ const BackButton = styled(Button)`
   &:hover {
     background-color: #555;
   }
+`;
+
+const TypewriterText = styled.div`
+  font-size: 34px; /* 폰트 크기 설정 */
+  font-weight: bold;
+  text-align: center; /* 텍스트 중앙 정렬 */
+  margin-bottom: 50px; /* 아래 여백 */
+`;
+
+
+const CustomButton = styled.button`
+  position: relative;
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  border-radius:20px;
+  text-transform: uppercase;
+  overflow: hidden;
+  color: #fff;
+  background: #101938;
+  border: none;
+  cursor: pointer;
+  z-index: 1;
+  transition: color 0.3s ease;
+
+  &:after {
+    position: absolute;
+    content: "";
+    width: 0;
+    height: 100%;
+    top: 0;
+    left: 0;
+    direction: rtl;
+    z-index: -1;
+    background: #4947FF;
+    transition: all 0.3s ease;
+  }
+
+  &:hover {
+    color: #fff;
+  }
+
+  &:hover:after {
+    left: auto;
+    right: 0;
+    width: 100%;
+  }
+
+  &:active {
+    top: 2px;
+  }
+`;
+const ButtonContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  width: 220px;
+  margin-top: 20px;
 `;
 
 const SignupPage = ({ setActivePage }) => {
@@ -87,7 +147,16 @@ const SignupPage = ({ setActivePage }) => {
 
   return (
     <SignupContainer>
-      <h1 style={{ marginBottom: 50 }}>정보 입력</h1>
+      <TypewriterText>
+          <Typewriter
+          options={{
+            strings: ['정보를 입력하세요'],
+            autoStart: true,
+            loop: false,
+            deleteSpeed: Infinity,
+          }}
+        />
+</TypewriterText>
       <FormGroup>
         <Label htmlFor="id">아이디</Label>
         <Input
@@ -124,11 +193,13 @@ const SignupPage = ({ setActivePage }) => {
         />
       </FormGroup>
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      <Button onClick={handleSignup} disabled={!formData.id || !formData.password || !formData.confirmPassword}>
-        완료
-      </Button>
-      <BackButton onClick={() => setActivePage('LoginPage')}>뒤로가기</BackButton>
+      <ButtonContainer>
 
+      <CustomButton onClick={handleSignup} disabled={!formData.id || !formData.password || !formData.confirmPassword}>
+        완료
+      </CustomButton>
+      <CustomButton onClick={() => setActivePage('LoginPage')}>뒤로가기</CustomButton>
+      </ButtonContainer>
     </SignupContainer>
   );
 };
