@@ -21,7 +21,7 @@ const ByteCount = styled.p`
 
 const MessageInput = ({ message, setMessage }) => {
   const byteCount = new TextEncoder().encode(message).length;
-  const isOverLimit = byteCount > 80;
+  const isOverLimit = byteCount > 90;
 
   return (
     <div>
@@ -34,7 +34,7 @@ const MessageInput = ({ message, setMessage }) => {
       />
       {/* 이건 일단 별 기능 없이 냅두는걸로, 추후 isOverLimit이면 mms api 부르게 바꿔야 될듯..? */}
       <ByteCount isOverLimit={isOverLimit}>
-        {byteCount} / 80 bytes
+        {byteCount} / 90 bytes
       </ByteCount>
     </div>
   );

@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { login } from '../services/authService';
 import logoImage from '../assets/logo.png';
 import Typewriter from 'typewriter-effect';
+
 const LoginContainer = styled.div`
   display: flex;
   flex-direction: column;

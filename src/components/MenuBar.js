@@ -2,15 +2,24 @@ import React from 'react';
 import styled from 'styled-components';
 import { FaPen, FaTags, FaClipboardList, FaImage } from 'react-icons/fa'; // 아이콘 추가
 import logo from '../assets/logo.png';
+import { logout } from '../services/authService';
+
 const MenuContainer = styled.div`
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   width: 15vw; /* 반응형에 맞춰 넓이 조정 */
   background: linear-gradient(180deg, #4947FF 0%, #5D3784 100%);
   color: white;
   height: 100vh;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
   padding-top: 1rem;
+  box-sizing: border-box; /* 패딩 포함 크기 계산 */
+`;
+
+const TopSection = styled.div`
+  display: flex;
+  flex-direction: column;
 `;
 
 const MenuItem = styled.button`
@@ -40,10 +49,11 @@ const MenuTitle = styled.h2`
   color: #ecf0f1;
   font-weight: bold;
 `;
-const LogoContainer = styled.div`
-  // text-align: center;
+
+const BottomSection = styled.div`
   margin-top: auto;
-  margin-bottom:20px;
+  text-align: center;
+  padding: 0;
 `;
 
 const LogoImage = styled.img`
@@ -53,26 +63,45 @@ const LogoImage = styled.img`
   filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.2)); /* 로고에 약간의 그림자 */
 `;
 
-const MenuBar = ({ activePage, setActivePage }) => (
-  <MenuContainer>
-    <MenuTitle>메뉴</MenuTitle>
-    <MenuItem active={activePage === 'MessageInput'} onClick={() => setActivePage('MessageInput')}>
-      <FaPen /> 메시지 입력
-    </MenuItem>
-    <MenuItem active={activePage === 'KeywordSelection'} onClick={() => setActivePage('KeywordSelection')}>
-      <FaTags /> 키워드 선택
-    </MenuItem>
-    <MenuItem active={activePage === 'Requirements'} onClick={() => setActivePage('Requirements')}>
-      <FaClipboardList /> 요구사항
-    </MenuItem>
-    <MenuItem active={activePage === 'ImageEditing'} onClick={() => setActivePage('ImageEditing')}>
-      <FaImage /> 이미지 편집
-    </MenuItem>
-    <LogoContainer>
-      <LogoImage src={logo}  />
-    </LogoContainer>
+const LogoutButton = styled(MenuItem)`
+  background-color: #c0392b;
+  justify-content: center;
+  &:hover {
+    background-color: #e74c3c;
+  }
+  width: 100%;
+`;
 
-  </MenuContainer>
-);
+const MenuBar = ({ activePage, setActivePage }) => {
+  const handleLogout = () => {
+    logout(); // 세션에서 토큰 제거
+    setActivePage('LoginPage'); // 로그인 페이지로 이동
+  };
+
+  return (
+    <MenuContainer>
+      <TopSection>
+        <MenuTitle>메뉴</MenuTitle>
+        <MenuItem active={activePage === 'MessageInput'} onClick={() => setActivePage('MessageInput')}>
+          <FaPen /> 메시지 입력
+        </MenuItem>
+        <MenuItem active={activePage === 'KeywordSelection'} onClick={() => setActivePage('KeywordSelection')}>
+          <FaTags /> 키워드 선택
+        </MenuItem>
+        <MenuItem active={activePage === 'Requirements'} onClick={() => setActivePage('Requirements')}>
+          <FaClipboardList /> 요구사항
+        </MenuItem>
+        <MenuItem active={activePage === 'ImageEditing'} onClick={() => setActivePage('ImageEditing')}>
+          <FaImage /> 이미지 편집
+        </MenuItem>
+      </TopSection>
+
+      <BottomSection>
+        <LogoImage src={logo} />
+        <LogoutButton onClick={handleLogout}>로그아웃</LogoutButton>
+      </BottomSection>
+    </MenuContainer>
+  );
+};
 
 export default MenuBar;

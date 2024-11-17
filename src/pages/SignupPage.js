@@ -33,30 +33,6 @@ const Input = styled.input`
   border-radius: 4px;
 `;
 
-const Button = styled.button`
-  width: 400px;
-  padding: 10px;
-  margin-top: 20px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #2980b9;
-  }
-`;
-
-
-const BackButton = styled(Button)`
-  background-color: gray;
-  margin-top: 10px;
-
-  &:hover {
-    background-color: #555;
-  }
-`;
-
 const TypewriterText = styled.div`
   font-size: 34px; /* 폰트 크기 설정 */
   font-weight: bold;

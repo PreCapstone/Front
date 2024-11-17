@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 const PageContainer = styled.div`
+  padding: 20px;
   display: flex;
   height: 100vh;
 `;

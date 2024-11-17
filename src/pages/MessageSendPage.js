@@ -52,6 +52,12 @@ const Textarea = styled.textarea`
   color: #333;
 `;
 
+const MessageTypeInfo = styled.p`
+  font-size: 14px;
+  color: red;
+  margin-top: 10px;
+`;
+
 const NumberInputSection = styled.div`
   margin-bottom: 20px;
 `;
@@ -142,6 +148,9 @@ const MessageSendPage = ({ setActivePage, previousMessage }) => {
   const [recipients, setRecipients] = useState([]);
   const [isSending, setIsSending] = useState(false);
 
+  const byteCount = new TextEncoder().encode(message).length;
+  const isMMS = byteCount > 90;
+
   const handlePhoneNumberChange = (e, part) => {
     setPhoneNumber({
       ...phoneNumber,
@@ -167,12 +176,11 @@ const MessageSendPage = ({ setActivePage, previousMessage }) => {
   const handleSendMessage = async () => {
     setIsSending(true);
     try {
-      const byteCount = new TextEncoder().encode(message).length;
       await Promise.all(
         recipients.map((recipient) =>
-          byteCount > 80
+          byteCount > 90
             ? sendMMS(recipient, title, message)
-            : sendSMS(recipient, title, message)
+            : sendSMS(recipient, message)
         )
       );
       alert('모든 메시지 전송 성공!');
@@ -188,12 +196,15 @@ const MessageSendPage = ({ setActivePage, previousMessage }) => {
       <FormContainer>
         <LeftPane>
           <SectionTitle>메시지 전송</SectionTitle>
-          <Input
-            placeholder="제목을 입력하세요."
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
+          {isMMS && (
+            <Input
+              placeholder="제목을 입력하세요."
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          )}
           <Textarea value={message} readOnly />
+          {isMMS && <MessageTypeInfo>메시지가 90bytes를 넘어가므로 MMS로 자동 전환됩니다.</MessageTypeInfo>}
         </LeftPane>
         <RightPane>
           <NumberInputSection>
