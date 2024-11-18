@@ -1,11 +1,5 @@
 import axios from 'axios';
 
-const calculateBase64Size = (base64String) => {
-  const padding = (base64String.match(/=/g) || []).length;
-  const base64Length = base64String.length;
-  return (base64Length * 3) / 4 - padding; // 바이트 크기 계산
-};
-
 /**
  * SMS 전송 API 호출
  * @param {string} recipient - 수신자 번호
@@ -48,7 +42,7 @@ export const sendSMS = async (recipient, message, changeWords = {}) => {
  * @param {string} message - 전송할 메시지
  * @returns {Promise} - API 응답
  */
-export const sendMMS = async (recipient, message, fileName, fileData, changeWords = {}) => {
+export const sendMMS = async (recipient, message, fileName, fileData, fileSize, changeWords = {}) => {
   try {
     const requestBody = {
       content: message,          // 메시지 내용
@@ -65,7 +59,7 @@ export const sendMMS = async (recipient, message, fileName, fileData, changeWord
       files: fileName && fileData ? [{
         name: fileName,
         data: fileData,
-        size: calculateBase64Size(fileData),
+        size: fileSize,
       }] : [],
     };
 

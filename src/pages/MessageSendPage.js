@@ -189,14 +189,8 @@ const MessageSendPage = ({ setActivePage, previousMessage }) => {
     const file = e.target.files[0];
     if (file) {
       // 파일 형식 확인
-      if (!['image/jpeg', 'image/jpg'].includes(file.type)) {
-        alert('JPG 또는 JPEG 형식의 이미지만 업로드 가능합니다.');
-        return;
-      }
-  
-      // 파일 크기 확인
-      if (file.size > 225 * 1024) { // Base64 변환 후 약 300KB 초과 가능성 고려
-        alert('파일 크기가 225KB를 초과하여 업로드할 수 없습니다.');
+      if (!['image/png'].includes(file.type)) {
+        alert('PNG 형식의 이미지만 업로드 가능합니다.');
         return;
       }
   
@@ -209,40 +203,48 @@ const MessageSendPage = ({ setActivePage, previousMessage }) => {
         setBase64Image(base64Data);
       };
       reader.readAsDataURL(file); // Base64 형식으로 파일 읽기
+    } else {
+      setSelectedImage(null);
+      setImagePreview(null);
+      setBase64Image(null); // 이미지 제거 시 초기화
     }
-  };
-
-  const calculateBase64Size = (base64String) => {
-    const padding = (base64String.match(/=/g) || []).length;
-    const base64Length = base64String.length;
-    return (base64Length * 3) / 4 - padding; // 바이트 크기 계산
   };
 
   const handleSendMessage = async () => {
-    if (isMMS && base64Image) {
-      const base64Size = calculateBase64Size(base64Image);
-      if (base64Size > 300 * 1024) { // 300KB 제한 확인
-        alert('Base64 데이터 크기가 300KB를 초과하여 전송할 수 없습니다.');
-        return;
+    if (isMMS && selectedImage) {
+      const fileData = base64Image; // Base64 인코딩된 데이터
+      const fileName = selectedImage.name; // 파일 이름
+      const fileSize = selectedImage.size; // 파일 크기 (바이트)
+  
+      setIsSending(true);
+      try {
+        await Promise.all(
+          recipients.map((recipient) =>
+            sendMMS(recipient, message, fileName, fileData, fileSize)
+          )
+        );
+        alert('모든 메시지 전송 성공!');
+      } catch (error) {
+        alert('일부 메시지 전송 실패: ' + error.message);
+      } finally {
+        setIsSending(false);
+      }
+    } else {
+      // SMS 전송 처리
+      setIsSending(true);
+      try {
+        await Promise.all(
+          recipients.map((recipient) => sendSMS(recipient, message))
+        );
+        alert('모든 메시지 전송 성공!');
+      } catch (error) {
+        alert('일부 메시지 전송 실패: ' + error.message);
+      } finally {
+        setIsSending(false);
       }
     }
-
-    setIsSending(true);
-    try {
-      await Promise.all(
-        recipients.map((recipient) =>
-          isMMS
-            ? sendMMS(recipient, message, selectedImage?.name, base64Image)
-            : sendSMS(recipient, message)
-        )
-      );
-      alert('모든 메시지 전송 성공!');
-    } catch (error) {
-      alert('일부 메시지 전송 실패: ' + error.message);
-    } finally {
-      setIsSending(false);
-    }
   };
+  
 
   return (
     <PageContainer>
@@ -255,11 +257,10 @@ const MessageSendPage = ({ setActivePage, previousMessage }) => {
               <MessageTypeInfo>메시지가 90bytes를 넘어가므로 MMS로 자동 전환됩니다.</MessageTypeInfo>
               <SectionTitle>이미지</SectionTitle>
               <ImageUploadContainer>
-                <FileInput type="file" accept="image/jpeg" onChange={handleImageChange} />
+                <FileInput type="file" accept="image/png" onChange={handleImageChange} />
                 {imagePreview && <ImagePreview src={imagePreview} alt="이미지 미리보기" />}
               </ImageUploadContainer>
-              <ImageTypeInfo>이미지의 크기가 225KB를 초과할 수 없습니다.</ImageTypeInfo>
-              <ImageTypeInfo>이미지의 형식은 JPG, JPEG만 가능합니다.</ImageTypeInfo>
+              <ImageTypeInfo>이미지의 형식은 PNG만 가능합니다.</ImageTypeInfo>
               <ImageTypeInfo>이미지는 최대 1개까지 전송 가능합니다.</ImageTypeInfo>
             </>
           )}
