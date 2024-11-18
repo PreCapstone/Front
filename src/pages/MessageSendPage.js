@@ -189,8 +189,8 @@ const MessageSendPage = ({ setActivePage, previousMessage }) => {
     const file = e.target.files[0];
     if (file) {
       // 파일 형식 확인
-      if (!['image/jpeg', 'image/jpg'].includes(file.type)) {
-        alert('JPG 또는 JPEG 형식의 이미지만 업로드 가능합니다.');
+      if (!['image/png'].includes(file.type)) {
+        alert('PNG 형식의 이미지만 업로드 가능합니다.');
         return;
       }
   
@@ -257,11 +257,10 @@ const MessageSendPage = ({ setActivePage, previousMessage }) => {
               <MessageTypeInfo>메시지가 90bytes를 넘어가므로 MMS로 자동 전환됩니다.</MessageTypeInfo>
               <SectionTitle>이미지</SectionTitle>
               <ImageUploadContainer>
-                <FileInput type="file" accept="image/jpeg" onChange={handleImageChange} />
+                <FileInput type="file" accept="image/png" onChange={handleImageChange} />
                 {imagePreview && <ImagePreview src={imagePreview} alt="이미지 미리보기" />}
               </ImageUploadContainer>
-              <ImageTypeInfo>이미지의 크기가 225KB를 초과할 수 없습니다.</ImageTypeInfo>
-              <ImageTypeInfo>이미지의 형식은 JPG, JPEG만 가능합니다.</ImageTypeInfo>
+              <ImageTypeInfo>이미지의 형식은 PNG만 가능합니다.</ImageTypeInfo>
               <ImageTypeInfo>이미지는 최대 1개까지 전송 가능합니다.</ImageTypeInfo>
             </>
           )}
