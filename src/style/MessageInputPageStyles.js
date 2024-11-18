@@ -9,6 +9,7 @@
 // vw vh는 스크롤바도 뷰포트로 보기 떄문에 추가적인 영역을 그려서 스크롤해서 봐야할수도 있음, %는 안 그럼.
 
 import styled, { keyframes } from 'styled-components';
+import { PRIMARY_COLOR } from '../style/colors';
 
 // 글자수보단 그냥 width 기준으로 하자... 
 // keyframe는 styled components 함수, css의 @keyframes 가져온 거. 
@@ -49,7 +50,7 @@ display: flex;
 
 export const Title = styled.h2`
   font-size: 3.75vw;
-  color: #6A1BB3;
+  color: ${PRIMARY_COLOR};
   opacity: 0;
   text-align: left;
   white-space: nowrap;
@@ -123,6 +124,10 @@ export const Pane = styled.div`
       transition-delay: 4s;
     }
   }
+`;
+
+export const ButtonGroup = styled.div`
+  gap: 1rem;
 `;
 
 // mousehover 사라졌을 때 해당 ui 흐릿하게 보이게 하기 위한 오버레이임

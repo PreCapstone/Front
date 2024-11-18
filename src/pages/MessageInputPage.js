@@ -6,7 +6,8 @@ import MessageRequestModal from '../components/MessageRequestModal';
 import Button from '../components/Button';
 import GPTInputForm from '../components/GPTInputForm';
 import { createGPTMessage } from '../services/gptService';
-import Loader from '../loader/Loader';
+import { PacmanLoader } from 'react-spinners';
+import { PRIMARY_COLOR } from '../style/colors';
 import { 
   PageContainer, 
   ContentArea, 
@@ -17,6 +18,7 @@ import {
   OverlayDiv,
   HintText,
 } from '../style/MessageInputPageStyles';
+import { ButtonContainer } from '../style/KeywordSelectionPageStyles';
 
 // 형식 : const(상수) 컴포넌트명 = ({props = 전달받는 속성, 부모에서 자식으로 데이터 전달 받을 때 사용, 매개변수 비슷}) => {컴포넌트 내용}
 const MessageInputPage = ({ setActivePage, setMessage, message }) => {
@@ -81,7 +83,6 @@ const MessageInputPage = ({ setActivePage, setMessage, message }) => {
     // styled-components를 사용하여 정의된 커스텀 컴포넌트기 때문에 이름 맘대로 지어도 되는 거임. 물론 스타일 코드에 관련된 스타일 있어야 에러 안 뜨겠지
     // style 코드에선 const PageContainer = styled.div`스타일내용` 이런 식으로 해놨는데 기본적으로 div지만 추가 스타일 적용됐다라는 뜻임
     <PageContainer>
-      {isLoading && <Loader/>}
       <ContentArea>
         {/* 왼쪽 패널 */}
         <Pane 
@@ -101,6 +102,7 @@ const MessageInputPage = ({ setActivePage, setMessage, message }) => {
             왼쪽의 message: MessageInput 컴포넌트 내에서 사용될 prop의 이름
             오른쪽의 {message}: 현재 컴포넌트(부모)의 state나 변수 message의 값을 전달 */}
             <MessageInput message={message} setMessage={setMessage} />
+            <ButtonContainer>
             <Button 
               text="메시지만 사용하기"
               onClick={() => setActivePage('SMSPage')}
@@ -110,8 +112,9 @@ const MessageInputPage = ({ setActivePage, setMessage, message }) => {
             <Button 
               text="입력 완료"
               onClick={() => setActivePage('KeywordSelection')}
-              backgroundColor="#6A1BB3"
+              backgroundColor={ PRIMARY_COLOR }
             />    
+            </ButtonContainer>
           </ContentWrapper>
           {/* $ : 해당 prop이 실제 DOM 요소에 전달되지 않고, 오직 스타일링 목적으로만 사용됨을 나타냄 (DOM은 웹 페이지 구조 표현하는 애. HTML 요소로 전달 안 된다는 소리)
           마우스 어딨냐에 따라 위에서 showOverlay 변경됐는데 그걸 그대로 따라감, $show에 따라 style에서 overlay 투명도 변경
@@ -144,11 +147,29 @@ const MessageInputPage = ({ setActivePage, setMessage, message }) => {
       리액트식 if문 변형. isLoading이 참이면 모달창 띄우고 false되면 꺼라. 
       */}
 
-      {isLoading && (
-        <ModalOverlay>
-          <div>메시지를 생성하고 있습니다...</div>
-        </ModalOverlay>
-      )}
+{isLoading && (
+  <ModalOverlay>
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '20px'
+    }}>
+      <PacmanLoader
+        color={PRIMARY_COLOR}
+        loading={isLoading}
+        size={45}
+      />
+      <div style={{ 
+        color: 'white',
+        marginTop: '20px',
+        fontSize: '1.5rem'
+      }}>
+        메시지를 생성하고 있습니다...
+      </div>
+    </div>
+  </ModalOverlay>
+)}
       
       {isModalOpen && (
         <ModalOverlay> 

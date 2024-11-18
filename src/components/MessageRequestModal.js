@@ -12,6 +12,8 @@ const ModalContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  // ModalOverlay의 z-index는 1
+  z-index: 2;
 `;
 
 const MessageDisplay = styled.div`
