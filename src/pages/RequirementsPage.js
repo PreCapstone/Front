@@ -60,18 +60,30 @@ const RequirementsPage = ({
     };
 
     const handleGenerateImage = async () => {
+        if (!requirement && !selectedSample) {
+            alert('요구사항을 작성하고, 샘플 이미지를 선택해주세요.');
+            return;
+        }
+
         if (!requirement) {
-            alert('요구사항을 입력하세요.');
+            alert('요구사항을 입력해주세요.');
+            return;
+        }
+
+        if (!selectedSample) {
+            alert('샘플 이미지를 선택해주세요.');
             return;
         }
 
         setLoading(true);
 
         try {
-            const prompt = `${previousMessage} 키워드: ${selectedKeywords.join(', ')}. ${requirement}`;
-            const generatedImage = await generateImage(prompt);
+            //const prompt = `${previousMessage} 키워드: ${selectedKeywords.join(', ')}. ${requirement}`;
+            const prompt = `${requirement}`;
+            const generatedImage = await generateImage({ prompt, initImage: selectedSample });
 
             setGeneratedImage(generatedImage);
+            setActivePage('ImageEditingPage'); // 이미지 생성 후 편집 페이지로 이동
             alert('이미지가 성공적으로 생성되었습니다!');
         } catch (error) {
             console.error('이미지 생성 실패:', error);
@@ -80,6 +92,7 @@ const RequirementsPage = ({
             setLoading(false);
         }
     };
+
 
     return (
         <PageContainer>
