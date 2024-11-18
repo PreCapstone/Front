@@ -64,7 +64,7 @@ export const Title = styled.h2`
 // 잘 안 떠오른다면-> 부분
 export const HintText = styled.h2`
   font-size: 1.28vw;
-  margin: 0 0 0 72%;
+  margin: 0 0 0 70%;
   transform: translateY(-50%);
   opacity: 0;
 `;

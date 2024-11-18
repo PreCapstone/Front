@@ -23,48 +23,33 @@ const MessageInputPage = ({ setActivePage, setMessage, message }) => {
   // State 관리. 리액트에서 이미 정의돼있는 useState 훅을 사용. 컴포넌트에 상태 생성할 때 쓰고 현재 상태값이랑 상태값 업뎃하는 함수 리턴함. 이걸 배열 구조 분해라는 문법 써서 변수에 넣기.
   // 리턴되는 set어쩌고State 함수는, 인자로 bool 주면 해당 상태 업뎃되고 컴포넌트 렌더링 다시 된다
   // useState 내부에 있는 건 상태 초기값
-  const [leftPaneState, setLeftPaneState] = useState({
-    isActive: false,
-    showOverlay: false,
-  });
-  const [rightPaneState, setRightPaneState] = useState({
-    isActive: false,
-    showOverlay: false,
+  const [paneState, setPaneState] = useState({
+    left: { isActive: false, showOverlay: false },
+    right: { isActive: false, showOverlay: false }
   });
   //모달창 열렸는지, 로딩중인지. 마지막은 현재 생성된 메세지 저장하는 애.
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [generatedMessage, setGeneratedMessage] = useState('');
 
-  // 왼쪽 패널 마우스 이벤트. 마우스 올려놓으면 이벤트 처리 (글자 타이핑 되고 ui 나오는 이벤트), 마우스 떠나면 관련 처리 (회색 오버레이 씌워주기)
-  const handleLeftMouseEnter = () => {
-    setLeftPaneState({
-      isActive: true,
-      showOverlay: false,
-    });
+  // 마우스 이벤트. 마우스 올려놓으면 이벤트 처리 (글자 타이핑 되고 ui 나오는 이벤트), 마우스 떠나면 관련 처리 (회색 오버레이 씌워주기)
+
+  const handleMouseEnter = (side) => {
+    setPaneState(prev => ({
+      ...prev,
+      [side]: { isActive: true, showOverlay: false }
+    }));
   };
+  
+
 // prev => ({ ... }) 방식은 이전 상태 기반으로 새 상태 만드는 함수. prev가 이전 상태를 뜻한다. ...prev는 스프레드 연산자인데 이전 상태의 모든 속성을 새 객체에 복사한다고 함. 즉 showOverlay만 바꾸고 나머지는 그대로 가져오란 소리
-  const handleLeftMouseLeave = () => {
-    setLeftPaneState(prev => ({
+  const handleMouseLeave = (side) => {
+    setPaneState(prev => ({
       ...prev,
-      showOverlay: true,
+      [side]: { ...prev[side], showOverlay: true }
     }));
   };
 
-  // 오른쪽 패널 마우스 이벤트
-  const handleRightMouseEnter = () => {
-    setRightPaneState({
-      isActive: true,
-      showOverlay: false,
-    });
-  };
-
-  const handleRightMouseLeave = () => {
-    setRightPaneState(prev => ({
-      ...prev,
-      showOverlay: true,
-    }));
-  };
 
   // GPT 메시지 생성 핸들러. 시간 걸릴 수 있으니 비동기로 처리
   const handleGPTSubmit = async (formData) => {
@@ -100,11 +85,11 @@ const MessageInputPage = ({ setActivePage, setMessage, message }) => {
       <ContentArea>
         {/* 왼쪽 패널 */}
         <Pane 
-          onMouseEnter={handleLeftMouseEnter}
-          onMouseLeave={handleLeftMouseLeave}
+          onMouseEnter={() => handleMouseEnter('left')}
+          onMouseLeave={() => handleMouseLeave('left')}
           // class가 js 예약어라서 리액트에선 className 쓰는 거, 같은 뜻. isActive면 클래스명 active 줌. 클래스명 active는 pane의 style에서 사용할 예정
           // 상태관리 vs 클래스명 바꿔치기 : 상태관리는 데이터값 관련 + 변경되면 렌더링 다시됨. 클래스명 바꿔치기는 주로 ui 변경 관련돼서 사용.
-          className={leftPaneState.isActive ? 'active' : ''}
+          className={paneState.left.isActive ? 'active' : ''}
         >
           <TitleContainer>
             <Title>메시지를</Title>
@@ -132,14 +117,14 @@ const MessageInputPage = ({ setActivePage, setMessage, message }) => {
           마우스 어딨냐에 따라 위에서 showOverlay 변경됐는데 그걸 그대로 따라감, $show에 따라 style에서 overlay 투명도 변경
           showOverlay 직접 안 주고 $show로 주는 이유 : style에서 showOverlay 직접 다루면 DOM에 영향 주거나 충돌할 수도 있음. 코드 가독성상 좋음.
           */}
-          <OverlayDiv $show={leftPaneState.showOverlay} />
+          <OverlayDiv $show={paneState.left.showOverlay} />
         </Pane>
 
         {/* 오른쪽 패널 */}
         <Pane
-          onMouseEnter={handleRightMouseEnter}
-          onMouseLeave={handleRightMouseLeave}
-          className={rightPaneState.isActive ? 'active' : ''}
+          onMouseEnter={() => handleMouseEnter('right')}
+          onMouseLeave={() => handleMouseLeave('right')}
+          className={paneState.right.isActive ? 'active' : ''}
         >
           <TitleContainer>
             <Title>AI 자동 생성</Title>
@@ -147,7 +132,7 @@ const MessageInputPage = ({ setActivePage, setMessage, message }) => {
           <ContentWrapper>
             <GPTInputForm onSubmit={handleGPTSubmit} />
           </ContentWrapper>
-          <OverlayDiv $show={rightPaneState.showOverlay} />
+          <OverlayDiv $show={paneState.right.showOverlay} />
         </Pane>
       </ContentArea>
 
@@ -158,12 +143,12 @@ const MessageInputPage = ({ setActivePage, setMessage, message }) => {
       {/* 모달
       리액트식 if문 변형. isLoading이 참이면 모달창 띄우고 false되면 꺼라. 
       */}
-      {/* {isLoading && (
+
+      {isLoading && (
         <ModalOverlay>
           <div>메시지를 생성하고 있습니다...</div>
         </ModalOverlay>
-      )} */}
-      
+      )}
       
       {isModalOpen && (
         <ModalOverlay> 

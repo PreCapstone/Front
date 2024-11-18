@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { FaPen, FaTags, FaClipboardList, FaImage } from 'react-icons/fa'; // 아이콘 추가
-import logo from '../assets/logo.png';
+import logo from '../assets/new_logo_vertical.png';
 import { logout } from '../services/authService';
 
 const MenuContainer = styled.div`
@@ -9,7 +9,7 @@ const MenuContainer = styled.div`
   flex-direction: column;
   justify-content: space-between;
   width: 15vw; /* 반응형에 맞춰 넓이 조정 */
-  background: linear-gradient(180deg, #4947FF 0%, #5D3784 100%);
+  background:#333333; 
   color: white;
   height: 100vh;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
@@ -30,6 +30,7 @@ const MenuItem = styled.button`
   align-items: center;
   gap: 1rem; 
   background-color: ${({ active }) => (active ? 'rgba(255, 255, 255, 0.1)' : 'transparent')};
+  border-radius: 20px;
   color: ${({ active }) => (active ? '#FFC312' : '#ecf0f1')};
   border: none;
   text-align: left;
