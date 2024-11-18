@@ -179,21 +179,32 @@ const ImageSendPage = ({ setActivePage, previousMessage, editedImage }) => {
       alert('이미지를 선택하세요.');
       return;
     }
-
-    setIsSending(true);
-    try {
-      await Promise.all(
-        recipients.map((recipient) =>
-          sendMMS(recipient, message, 'editedImage.jpg', imagePreview)
-        )
-      );
-      alert('모든 메시지 전송 성공!');
-    } catch (error) {
-      alert('일부 메시지 전송 실패: ' + error.message);
-    } finally {
-      setIsSending(false);
-    }
-  };
+  
+    // 이미지 데이터 가져오기
+    const file = new File([editedImage], 'editedImage.jpg', { type: 'image/jpeg' });
+    const fileName = file.name;
+    const fileSize = file.size;
+    
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const fileData = reader.result.split(',')[1]; // Base64 인코딩 데이터 추출
+  
+      setIsSending(true);
+      try {
+        await Promise.all(
+          recipients.map((recipient) =>
+            sendMMS(recipient, message, fileName, fileData, fileSize)
+          )
+        );
+        alert('모든 메시지 전송 성공!');
+      } catch (error) {
+        alert('일부 메시지 전송 실패: ' + error.message);
+      } finally {
+        setIsSending(false);
+      }
+    };
+    reader.readAsDataURL(file); // Base64로 변환
+  };  
 
   return (
     <PageContainer>
