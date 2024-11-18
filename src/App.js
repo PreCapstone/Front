@@ -38,7 +38,10 @@ const App = () => {
           />
         );
       case 'KeywordSelection':
-        return <KeywordSelectionPage setActivePage={setActivePage} />;
+        return <KeywordSelectionPage 
+                message={message}  
+                setActivePage={setActivePage}
+              />;
       case 'Requirements':
         return (
           <RequirementsPage

@@ -6,7 +6,7 @@ import MessageRequestModal from '../components/MessageRequestModal';
 import Button from '../components/Button';
 import GPTInputForm from '../components/GPTInputForm';
 import { createGPTMessage } from '../services/gptService';
-import { PacmanLoader } from 'react-spinners';
+import LoadingSpinner from '../components/LoadingSpinner';
 import { PRIMARY_COLOR } from '../style/colors';
 import { 
   PageContainer, 
@@ -35,7 +35,6 @@ const MessageInputPage = ({ setActivePage, setMessage, message }) => {
   const [generatedMessage, setGeneratedMessage] = useState('');
 
   // 마우스 이벤트. 마우스 올려놓으면 이벤트 처리 (글자 타이핑 되고 ui 나오는 이벤트), 마우스 떠나면 관련 처리 (회색 오버레이 씌워주기)
-
   const handleMouseEnter = (side) => {
     setPaneState(prev => ({
       ...prev,
@@ -109,11 +108,17 @@ const MessageInputPage = ({ setActivePage, setMessage, message }) => {
               backgroundColor="#ddd"
               textColor="black"
             />
-            <Button 
+              <Button 
               text="입력 완료"
-              onClick={() => setActivePage('KeywordSelection')}
-              backgroundColor={ PRIMARY_COLOR }
-            />    
+              onClick={() => {
+                if (message.trim()) {
+                  setActivePage('KeywordSelection');
+                } else {
+                  alert('메시지를 입력해주세요');
+                }
+            }}
+            backgroundColor={ PRIMARY_COLOR }
+            />
             </ButtonContainer>
           </ContentWrapper>
           {/* $ : 해당 prop이 실제 DOM 요소에 전달되지 않고, 오직 스타일링 목적으로만 사용됨을 나타냄 (DOM은 웹 페이지 구조 표현하는 애. HTML 요소로 전달 안 된다는 소리)
@@ -149,25 +154,7 @@ const MessageInputPage = ({ setActivePage, setMessage, message }) => {
 
 {isLoading && (
   <ModalOverlay>
-    <div style={{ 
-      display: 'flex', 
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: '20px'
-    }}>
-      <PacmanLoader
-        color={PRIMARY_COLOR}
-        loading={isLoading}
-        size={45}
-      />
-      <div style={{ 
-        color: 'white',
-        marginTop: '20px',
-        fontSize: '1.5rem'
-      }}>
-        메시지를 생성하고 있습니다...
-      </div>
-    </div>
+    <LoadingSpinner text="메시지를 생성하고 있습니다..." />
   </ModalOverlay>
 )}
       

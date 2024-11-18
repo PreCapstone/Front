@@ -1,6 +1,7 @@
 // 입력받는 텍스트 필드와 바이트 세기 기능을 제공하는 컴포넌트. 
 import React from 'react';
 import styled from 'styled-components';
+import { PRIMARY_COLOR } from '../style/colors';
 
 const Textarea = styled.textarea`
   width: 100%;
@@ -9,8 +10,12 @@ const Textarea = styled.textarea`
   font-size: 16px;
   border: 1px solid #ccc;
   resize: none;
-  color: black;
+  
+  &:focus {
+    outline: none;
+    border-color: ${PRIMARY_COLOR};
 `;
+
 
 const ByteCount = styled.p`
   font-size: 14px;
@@ -18,6 +23,8 @@ const ByteCount = styled.p`
   margin: 5px 0;
   color: ${({ isOverLimit }) => (isOverLimit ? 'red' : '#666')};
 `;
+
+
 
 const MessageInput = ({ message, setMessage }) => {
   const byteCount = new TextEncoder().encode(message).length;
@@ -32,7 +39,6 @@ const MessageInput = ({ message, setMessage }) => {
         onChange={(e) => setMessage(e.target.value)}
         placeholder="메시지를 입력하세요"
       />
-      {/* 이건 일단 별 기능 없이 냅두는걸로, 추후 isOverLimit이면 mms api 부르게 바꿔야 될듯..? */}
       <ByteCount isOverLimit={isOverLimit}>
         {byteCount} / 90 bytes
       </ByteCount>
