@@ -92,28 +92,21 @@ const ModalContent = styled(motion.div)`
 
 const MessageRequestModal = ({ generatedMessage, originalMessage, onClose, onSelect }) => {
   const [showConfirm, setShowConfirm] = useState(false);
-  const [messageToDelete, setMessageToDelete] = useState(null);
+  const [messageToSelect, setMessageToSelect] = useState(null);
 
   const handleMessageClick = (type) => {
-    if (type === 'original' && generatedMessage) {
-      setMessageToDelete('generated');
-      setShowConfirm(true);
-    } else if (type === 'generated' && originalMessage) {
-      setMessageToDelete('original');
-      setShowConfirm(true);
-    } else {
-      onSelect(type);
-    }
+    setMessageToSelect(type);
+    setShowConfirm(true);
   };
 
   const handleConfirm = () => {
-    onSelect(messageToDelete === 'original' ? 'generated' : 'original');
+    onSelect(messageToSelect);
     setShowConfirm(false);
   };
 
   const handleCancel = () => {
     setShowConfirm(false);
-    setMessageToDelete(null);
+    setMessageToSelect(null);
   };
 
   return (
@@ -139,11 +132,11 @@ const MessageRequestModal = ({ generatedMessage, originalMessage, onClose, onSel
             >
               <MessageDisplay onClick={() => handleMessageClick('original')}>
                 <h3>원본 메시지</h3>
-                <p>{originalMessage}</p>
+                <p>{originalMessage || '(비어 있음)'}</p>
               </MessageDisplay>
               <MessageDisplay onClick={() => handleMessageClick('generated')}>
                 <h3>생성된 메시지</h3>
-                <p>{generatedMessage}</p>
+                <p>{generatedMessage || '(비어 있음)'}</p>
               </MessageDisplay>
               <ButtonGroup>
                 <Button 
@@ -163,9 +156,9 @@ const MessageRequestModal = ({ generatedMessage, originalMessage, onClose, onSel
               transition={{ duration: 0.2 }}
             >
               <ConfirmMessage>
-                {messageToDelete === 'original' 
-                  ? '원본 메시지는 삭제됩니다. AI 생성 메시지를 선택하시겠습니까?' 
-                  : 'AI가 생성한 메시지는 삭제됩니다. 원본 메시지를 선택하시겠습니까?'}
+                {messageToSelect === 'original' 
+                  ? 'AI가 생성한 메시지는 삭제됩니다. 원본 메시지를 선택하시겠습니까?'
+                  : '원본 메시지는 삭제됩니다. AI 생성 메시지를 선택하시겠습니까?'}
               </ConfirmMessage>
               <ButtonGroup>
                 <Button 
