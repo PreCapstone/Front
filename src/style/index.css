@@ -5,7 +5,7 @@
   font-style: normal;
 }
 
-body {
+body, button, textarea, input {
 margin: 0;
 font-family: 'GmarketSansMedium', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
   'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',

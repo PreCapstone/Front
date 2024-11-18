@@ -8,10 +8,12 @@ const Overlay = styled.div`
   width: 100%;
   height: 100%;
   backdrop-filter: blur(5px);
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.9);
   display: flex;
   justify-content: center;
   align-items: center;
+  // MessageRequestModal의 z-index는 2
+  z-index: 1;
 `;
 
 const ModalOverlay = ({ children }) => {

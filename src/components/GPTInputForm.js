@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import Button from './Button';
+import { PRIMARY_COLOR } from '../style/colors';
 
 const FormContainer = styled.div`
   display: flex;
@@ -105,7 +106,7 @@ const GPTInputForm = ({ onSubmit }) => {
         <Button 
           text="메시지 자동 생성"
           onClick={() => onSubmit(formData)}
-          backgroundColor="#6A1BB3"
+          backgroundColor={ PRIMARY_COLOR }
         />
       </ButtonContainer>
     </FormContainer>

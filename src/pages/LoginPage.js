@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { login } from '../services/authService';
-import logoImage from '../assets/logo.png';
+import logoImage from '../assets/new_logo_horizontal.png';
 import Typewriter from 'typewriter-effect';
 
 const LoginContainer = styled.div`
@@ -16,7 +16,7 @@ const LoginContainer = styled.div`
 
 const LogoImage = styled.img`
   width: 500px;
-  margin-bottom: 50px;
+  // margin-bottom: 50px;
 `;
 
 const FormGroup = styled.div`
