@@ -47,6 +47,12 @@ const MessageTypeInfo = styled.p`
   font-size: 14px;
   color: red;
   margin-top: 10px;
+  margin-bottom: 50px;
+`;
+
+const ImageTypeInfo = styled.p`
+  font-size: 12px;
+  color: black;
 `;
 
 const NumberInputSection = styled.div`
@@ -94,7 +100,7 @@ const BackButton = styled.button`
   width: 150px;
   position: absolute;
   bottom: 20px;
-  left: 20px;
+  right: 20px;
 `;
 
 const RecipientList = styled.div`
@@ -182,18 +188,45 @@ const MessageSendPage = ({ setActivePage, previousMessage }) => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // 파일 형식 확인
+      if (!['image/jpeg', 'image/jpg'].includes(file.type)) {
+        alert('JPG 또는 JPEG 형식의 이미지만 업로드 가능합니다.');
+        return;
+      }
+  
+      // 파일 크기 확인
+      if (file.size > 225 * 1024) { // Base64 변환 후 약 300KB 초과 가능성 고려
+        alert('파일 크기가 225KB를 초과하여 업로드할 수 없습니다.');
+        return;
+      }
+  
       setSelectedImage(file);
       setImagePreview(URL.createObjectURL(file));
-
+  
       const reader = new FileReader();
       reader.onloadend = () => {
-        setBase64Image(reader.result.split(',')[1]); // Base64 데이터 추출
+        const base64Data = reader.result.split(',')[1]; // 헤더 제거 후 Base64 데이터
+        setBase64Image(base64Data);
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(file); // Base64 형식으로 파일 읽기
     }
   };
 
+  const calculateBase64Size = (base64String) => {
+    const padding = (base64String.match(/=/g) || []).length;
+    const base64Length = base64String.length;
+    return (base64Length * 3) / 4 - padding; // 바이트 크기 계산
+  };
+
   const handleSendMessage = async () => {
+    if (isMMS && base64Image) {
+      const base64Size = calculateBase64Size(base64Image);
+      if (base64Size > 300 * 1024) { // 300KB 제한 확인
+        alert('Base64 데이터 크기가 300KB를 초과하여 전송할 수 없습니다.');
+        return;
+      }
+    }
+
     setIsSending(true);
     try {
       await Promise.all(
@@ -220,10 +253,14 @@ const MessageSendPage = ({ setActivePage, previousMessage }) => {
           {isMMS && (
             <>
               <MessageTypeInfo>메시지가 90bytes를 넘어가므로 MMS로 자동 전환됩니다.</MessageTypeInfo>
+              <SectionTitle>이미지</SectionTitle>
               <ImageUploadContainer>
                 <FileInput type="file" accept="image/jpeg" onChange={handleImageChange} />
                 {imagePreview && <ImagePreview src={imagePreview} alt="이미지 미리보기" />}
               </ImageUploadContainer>
+              <ImageTypeInfo>이미지의 크기가 225KB를 초과할 수 없습니다.</ImageTypeInfo>
+              <ImageTypeInfo>이미지의 형식은 JPG, JPEG만 가능합니다.</ImageTypeInfo>
+              <ImageTypeInfo>이미지는 최대 1개까지 전송 가능합니다.</ImageTypeInfo>
             </>
           )}
         </LeftPane>
