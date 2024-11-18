@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import { FaPen, FaTags, FaClipboardList, FaImage } from 'react-icons/fa'; // 아이콘 추가
 import logo from '../assets/new_logo_vertical.png';
 import { logout } from '../services/authService';
+import { SECONDARY_COLOR } from '../style/colors';
+import { OTHER_COLOR } from '../style/colors';
 
 const MenuContainer = styled.div`
   display: flex;
@@ -31,7 +33,7 @@ const MenuItem = styled.button`
   gap: 1rem; 
   background-color: ${({ active }) => (active ? 'rgba(255, 255, 255, 0.1)' : 'transparent')};
   border-radius: 20px;
-  color: ${({ active }) => (active ? '#FFC312' : '#ecf0f1')};
+  color: ${({ active }) => (active ? SECONDARY_COLOR : '#ecf0f1')};
   border: none;
   text-align: left;
   cursor: pointer;
@@ -39,7 +41,7 @@ const MenuItem = styled.button`
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
-    color: #FFC312;
+    color: ${SECONDARY_COLOR};
   }
 `;
 
@@ -65,7 +67,7 @@ const LogoImage = styled.img`
 `;
 
 const LogoutButton = styled(MenuItem)`
-  background-color: #c0392b;
+  background-color: ${ OTHER_COLOR };
   justify-content: center;
   &:hover {
     background-color: #e74c3c;
