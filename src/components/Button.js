@@ -1,8 +1,11 @@
+// components/Button.js
 import React from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
+import { SECONDARY_COLOR, PRIMARY_COLOR } from '../style/colors';
 
 const StyledButton = styled.button`
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -11,22 +14,53 @@ const StyledButton = styled.button`
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   background-color: ${props => props.backgroundColor || '#6A1BB3'};
   color: ${props => props.textColor || 'white'};
+  overflow: hidden;
+  z-index: 1;
   
+  &:after {
+    position: absolute;
+    content: "";
+    width: 0;
+    height: 100%;
+    top: 0;
+    left: 0;
+    direction: rtl;
+    z-index: -1;
+    background: ${SECONDARY_COLOR};
+    transition: all 0.2s ease;
+  }
+
   &:hover {
-    opacity: 0.9;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    color: ${PRIMARY_COLOR};
+  }
+
+  &:hover:after {
+    left: auto;
+    right: 0;
+    width: 100%;
   }
 
   &:active {
     transform: scale(0.98);
+    top: 2px;
   }
 
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    &:hover {
+      color: ${props => props.textColor || 'white'};
+    }
+    &:hover:after {
+      width: 0;
+    }
+    &:active {
+      transform: none;
+      top: 0;
+    }
   }
 `;
 

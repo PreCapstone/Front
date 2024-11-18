@@ -1,14 +1,17 @@
-// styles/KeywordSelectionPageStyles.js
 import styled from 'styled-components';
+import { PRIMARY_COLOR } from './colors';
+
+ // clamp(최소값, 선호값, 최대값) 
 
 export const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
   min-height: 90vh;
   padding: 2rem;
-  max-width: 90vw;
+  width: 90%;
   margin: 0 auto;
-  gap: 2rem;
+  gap: 2vh;
+  position: relative;
 `;
 
 export const InputContainer = styled.div`
@@ -27,7 +30,7 @@ export const InputField = styled.input`
 
   &:focus {
     outline: none;
-    border-color: #6a1bb3;
+    border-color: ${PRIMARY_COLOR};
   }
 `;
 
@@ -36,8 +39,13 @@ export const KeywordContainer = styled.div`
   flex-wrap: wrap;
   gap: 1rem;
   max-height: 50vh;
-  overflow-y: auto;
+  overflow: visible;
   padding: 1rem;
+  border: 0.15rem solid ${PRIMARY_COLOR};
+  border-radius: 0.4rem;
+  min-height: 15vh;
+  background-color: #f8f8f8;
+  position: relative;
 `;
 
 export const KeywordItem = styled.div`
@@ -48,15 +56,23 @@ export const KeywordItem = styled.div`
   align-items: center;
   gap: 0.5rem;
   font-size: 1rem;
+  cursor: move;
+  user-select: none;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
 `;
 
-export const RemoveButton = styled.button`
-  background: none;
-  border: none;
-  color: red;
-  cursor: pointer;
-  font-size: 0.9rem;
-  padding: 0.2rem 0.5rem;
+export const DeleteZone = styled.div`
+  height: 10vh;
+  border: 0.15rem dashed ${props => props.$isDraggingOver ? '#ff0000' : '#ff6b6b'};
+  border-radius: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${props => props.$isDraggingOver ? '#ff0000' : '#ff6b6b'};
+  margin-top: 1rem;
+  background-color: ${props => props.$isDraggingOver ? 'rgba(255, 0, 0, 0.1)' : 'rgba(255, 107, 107, 0.05)'};
+  transition: all 0.3s ease;
 `;
 
 export const ButtonContainer = styled.div`
@@ -64,10 +80,11 @@ export const ButtonContainer = styled.div`
   display: flex;
   justify-content: space-between;
   gap: 1rem;
+  width: 100%;
 `;
 
 export const PageTitle = styled.h2`
   font-size: 1.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1vh;
   color: #333;
 `;
