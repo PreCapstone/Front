@@ -1,85 +1,62 @@
 import React, { useState } from 'react';
-import styled from 'styled-components';
-import { generateImage } from '../services/imageService'; // Stable Diffusion API 호출 서비스
-
-const PageContainer = styled.div`
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    padding: 20px;
-    box-sizing: border-box;
-`;
-
-const Textarea = styled.textarea`
-    width: 100%;
-    height: 80px;
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    margin-bottom: 10px;
-    resize: none;
-`;
-
-const ByteCount = styled.div`
-    text-align: right;
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 20px;
-`;
-
-const SampleImageContainer = styled.div`
-    display: flex;
-    gap: 10px;
-    overflow-x: auto;
-    margin-bottom: 20px;
-`;
-
-const SampleImage = styled.img`
-    width: 120px;
-    height: 120px;
-    border: 1px solid #ccc;
-    cursor: pointer;
-
-    &:hover {
-        border-color: #6a1bb3;
-    }
-`;
-
-const ButtonContainer = styled.div`
-    display: flex;
-    justify-content: space-between;
-`;
-
-const ActionButton = styled.button`
-    padding: 10px 20px;
-    background-color: ${({ primary }) => (primary ? '#6a1bb3' : '#ddd')};
-    color: ${({ primary }) => (primary ? 'white' : 'black')};
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
-
-    &:hover {
-        background-color: ${({ primary }) => (primary ? '#531299' : '#bbb')};
-    }
-`;
+import {
+    PageContainer,
+    Textarea,
+    ByteCount,
+    SampleImageLabel,
+    SliderContainer,
+    SampleImageList,
+    SampleImage,
+    SliderButton,
+    ButtonContainer,
+    ActionButton,
+} from '../style/RequirementsPageStyles'; // 스타일 불러오기
+import { generateImage } from '../services/imageService'; // 이미지 생성 서비스 가져오기
 
 const RequirementsPage = ({
                               setActivePage,
                               requirement,
-                              setRequirement, // 부모 컴포넌트에서 전달받은 상태 변경 함수
-                              sampleImages = [],
+                              setRequirement,
                               setGeneratedImage,
                               previousMessage,
                               selectedKeywords,
                           }) => {
     const [loading, setLoading] = useState(false);
+    const [selectedSample, setSelectedSample] = useState(null);
+    const [currentOffset, setCurrentOffset] = useState(0);
+
+    const sampleImages = [
+        'https://hs-m2m-bucket.s3.ap-northeast-2.amazonaws.com/0_20241114214128.png',
+        'https://hs-m2m-bucket.s3.ap-northeast-2.amazonaws.com/8123098.png',
+        'https://hs-m2m-bucket.s3.ap-northeast-2.amazonaws.com/2023051202050_0.jpg',
+        'https://hs-m2m-bucket.s3.ap-northeast-2.amazonaws.com/8daf7186d8295947ed8bc84873c9671c.jpg',
+        'https://hs-m2m-bucket.s3.ap-northeast-2.amazonaws.com/%EC%BA%A1%EC%B2%98.PNG_4_20241117_070055.jpg',
+        'https://hs-m2m-bucket.s3.ap-northeast-2.amazonaws.com/913_736_2524.jpg',
+        'https://hs-m2m-bucket.s3.ap-northeast-2.amazonaws.com/unnamed.jpg',
+        'https://hs-m2m-bucket.s3.ap-northeast-2.amazonaws.com/unnamed+(1).jpg',
+        'https://hs-m2m-bucket.s3.ap-northeast-2.amazonaws.com/t-35.jpg',
+        'https://hs-m2m-bucket.s3.ap-northeast-2.amazonaws.com/lovepik-learning-notebooks-material-image-png-image_400487469_wh1200.png',
+        'https://hs-m2m-bucket.s3.ap-northeast-2.amazonaws.com/kheanh_202402200441.jpg',
+    ];
+
+    const maxVisibleImages = 7; // 한번에 보여줄 이미지 개수
+    const imageWidth = 120 + 10; // 이미지 가로 크기 + gap
+    const maxOffset = -(Math.ceil(sampleImages.length / maxVisibleImages) - 1) * (imageWidth * maxVisibleImages);
 
     const handleTextareaChange = (e) => {
         setRequirement(e.target.value);
     };
 
     const handleImageClick = (image) => {
-        setGeneratedImage(image);
+        setSelectedSample(image);
+    };
+
+    const handleSlider = (direction) => {
+        if (direction === 'left' && currentOffset < 0) {
+            setCurrentOffset((prev) => prev + imageWidth * maxVisibleImages);
+        } else if (direction === 'right' && currentOffset > maxOffset) {
+            setCurrentOffset((prev) => prev - imageWidth * maxVisibleImages);
+        }
     };
 
     const handleGenerateImage = async () => {
@@ -94,7 +71,7 @@ const RequirementsPage = ({
             const prompt = `${previousMessage} 키워드: ${selectedKeywords.join(', ')}. ${requirement}`;
             const generatedImage = await generateImage(prompt);
 
-            setGeneratedImage(generatedImage); // 생성된 이미지 URL 상위 컴포넌트로 전달
+            setGeneratedImage(generatedImage);
             alert('이미지가 성공적으로 생성되었습니다!');
         } catch (error) {
             console.error('이미지 생성 실패:', error);
@@ -113,16 +90,28 @@ const RequirementsPage = ({
                 placeholder="요구사항을 입력해주세요."
             />
             <ByteCount>{new TextEncoder().encode(requirement).length} / 200byte</ByteCount>
-            <SampleImageContainer>
-                {sampleImages.map((img, index) => (
-                    <SampleImage
-                        key={index}
-                        src={img}
-                        alt={`샘플 ${index}`}
-                        onClick={() => handleImageClick(img)}
-                    />
-                ))}
-            </SampleImageContainer>
+
+            <SampleImageLabel>샘플 이미지를 선택</SampleImageLabel>
+            <SliderContainer>
+                <SliderButton direction="left" onClick={() => handleSlider('left')}>
+                    ‹
+                </SliderButton>
+                <SampleImageList offset={currentOffset}>
+                    {sampleImages.map((img, index) => (
+                        <SampleImage
+                            key={index}
+                            src={img}
+                            alt={`샘플 ${index}`}
+                            onClick={() => handleImageClick(img)}
+                            selected={selectedSample === img}
+                        />
+                    ))}
+                </SampleImageList>
+                <SliderButton direction="right" onClick={() => handleSlider('right')}>
+                    ›
+                </SliderButton>
+            </SliderContainer>
+
             <ButtonContainer>
                 <ActionButton onClick={() => setActivePage('KeywordSelection')}>← 이전</ActionButton>
                 <ActionButton primary onClick={handleGenerateImage} disabled={loading}>
