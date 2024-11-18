@@ -104,7 +104,7 @@ const BackButton = styled.button`
   width: 150px;
   position: absolute;
   bottom: 20px;
-  left: 20px;
+  right: 20px;
 `;
 
 const RecipientList = styled.div`

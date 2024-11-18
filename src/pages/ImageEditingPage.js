@@ -49,6 +49,15 @@ const TextOverlay = styled.div`
   text-decoration: ${({ underline }) => (underline ? 'underline' : 'none')};
 `;
 
+const StickerOverlay = styled.img`
+  position: absolute;
+  top: ${({ top }) => top}px;
+  left: ${({ left }) => left}px;
+  cursor: move;
+  width: 60px;
+  height: 60px;
+`;
+
 const TextEditContainer = styled.div`
   width: 250px;
   height: 100%;
@@ -154,9 +163,11 @@ const ImageEditingPage = ({
   setActivePage,
 }) => {
   const [showTextEdit, setShowTextEdit] = useState(false);
+  const [showStickerEdit, setShowStickerEdit] = useState(false);
   const [textInput, setTextInput] = useState('');
   const [texts, setTexts] = useState([]);
   const [selectedTextIndex, setSelectedTextIndex] = useState(null);
+  const [stickers, setStickers] = useState([]);
   const [draggingIndex, setDraggingIndex] = useState(null);
   const [dragStartPosition, setDragStartPosition] = useState({ x: 0, y: 0 });
 
@@ -172,9 +183,23 @@ const ImageEditingPage = ({
     }
   };
 
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setStickers((prevStickers) => [
+          ...prevStickers,
+          { src: e.target.result, top: 50, left: 50 },
+        ]);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleCompleteClick = () => {
     setActivePage('ImageSendPage', { editedImage: generatedImage }); // 편집된 이미지 전달
-  };  
+  };
 
   const handleStyleChange = (style) => {
     if (selectedTextIndex !== null) {
@@ -279,6 +304,19 @@ const ImageEditingPage = ({
         </TextEditContainer>
       )}
 
+      {showStickerEdit && (
+        <TextEditContainer>
+        <h4>스티커 추가</h4>
+        <p>스티커 업로드</p>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileUpload}
+          style={{ marginTop: '10px' }}
+        />
+      </TextEditContainer>
+      )}
+
       <ImageContainer>
         {generatedImage ? (
           <Image src={generatedImage} alt="Generated" />
@@ -301,9 +339,28 @@ const ImageEditingPage = ({
           </TextOverlay>
         ))}
 
+        {stickers.map((sticker, index) => (
+          <StickerOverlay
+            key={index}
+            src={sticker.src}
+            top={sticker.top}
+            left={sticker.left}
+            onMouseDown={(event) => handleDragStart(index, event)}
+          />
+        ))}
+
         <ButtonGroup>
-          <ActionButton onClick={() => setShowTextEdit(!showTextEdit)}>
+          <ActionButton onClick={() => {
+            setShowTextEdit(!showTextEdit);
+            setShowStickerEdit(false); // 스티커 창 닫기
+          }}>
             텍스트 추가
+          </ActionButton>
+          <ActionButton onClick={() => {
+            setShowStickerEdit(!showStickerEdit);
+            setShowTextEdit(false); // 텍스트 창 닫기
+          }}>
+            스티커 추가
           </ActionButton>
         </ButtonGroup>
       </ImageContainer>

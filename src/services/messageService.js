@@ -1,12 +1,18 @@
 import axios from 'axios';
 
+const calculateBase64Size = (base64String) => {
+  const padding = (base64String.match(/=/g) || []).length;
+  const base64Length = base64String.length;
+  return (base64Length * 3) / 4 - padding; // 바이트 크기 계산
+};
+
 /**
  * SMS 전송 API 호출
  * @param {string} recipient - 수신자 번호
  * @param {string} message - 전송할 메시지
  * @returns {Promise} - API 응답
  */
-export const sendSMS = async (recipient, message) => {
+export const sendSMS = async (recipient, message, changeWords = {}) => {
   try {
     const requestBody = {
       content: message,          // 메시지 내용
@@ -16,6 +22,7 @@ export const sendSMS = async (recipient, message) => {
         {
           to: recipient,         // 수신자 번호
           name: '고객',           // 기본 치환 이름
+          changeWord: changeWords, // 치환 문구
         },
       ],
       refKey: `ref_${Date.now()}`,          // 고유 참조 키
@@ -41,7 +48,7 @@ export const sendSMS = async (recipient, message) => {
  * @param {string} message - 전송할 메시지
  * @returns {Promise} - API 응답
  */
-export const sendMMS = async (recipient, message, fileName = null, fileData = null) => {
+export const sendMMS = async (recipient, message, fileName, fileData, changeWords = {}) => {
   try {
     const requestBody = {
       content: message,          // 메시지 내용
@@ -51,21 +58,16 @@ export const sendMMS = async (recipient, message, fileName = null, fileData = nu
         {
           to: recipient,         // 수신자 번호
           name: '고객',           // 기본 치환 이름
+          changeWord: changeWords, // 치환 문구
         },
       ],
       refKey: `ref_${Date.now()}`,          // 고유 참조 키
+      files: fileName && fileData ? [{
+        name: fileName,
+        data: fileData,
+        size: calculateBase64Size(fileData),
+      }] : [],
     };
-
-    // 파일 정보가 있는 경우에만 files 필드 추가
-    if (fileName && fileData) {
-      requestBody.files = [
-        {
-          name: fileName,        // 파일 이름
-          data: fileData,        // Base64 인코딩된 파일 데이터
-          size: Buffer.from(fileData, 'base64').length, // 파일 크기 (바이트 단위)
-        },
-      ];
-    }
 
     const response = await axios.post(`${process.env.REACT_APP_SERVER_IP}/ppurio/message/send-MMS`, requestBody, {
       headers: {
@@ -74,7 +76,17 @@ export const sendMMS = async (recipient, message, fileName = null, fileData = nu
     });
     return response.data;
   } catch (error) {
-    console.error('MMS 전송 실패:', error);
-    throw error;
+    if (error.response) {
+      // 서버 응답을 받았지만 상태 코드가 2xx가 아닌 경우
+      console.error('Response Data:', error.response.data); // 서버에서 보낸 에러 메시지
+      console.error('Status:', error.response.status); // HTTP 상태 코드
+      console.error('Headers:', error.response.headers); // 응답 헤더
+    } else if (error.request) {
+      // 요청이 이루어졌지만 응답이 없을 경우
+      console.error('Request:', error.request);
+    } else {
+      // 요청 설정 중 문제가 발생한 경우
+      console.error('Error:', error.message);
+    }
   }
 };
