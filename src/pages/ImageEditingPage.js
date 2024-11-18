@@ -173,8 +173,8 @@ const ImageEditingPage = ({
   };
 
   const handleCompleteClick = () => {
-    setActivePage('ImageSendPage');  // ImageSendPage로 전환
-  };
+    setActivePage('ImageSendPage', { editedImage: generatedImage }); // 편집된 이미지 전달
+  };  
 
   const handleStyleChange = (style) => {
     if (selectedTextIndex !== null) {

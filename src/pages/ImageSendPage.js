@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { sendSMS, sendMMS } from '../services/messageService'; // 서비스 임포트
+import { sendMMS } from '../services/messageService'; // 서비스 임포트
 
 const PageContainer = styled.div`
   display: flex;
@@ -17,28 +17,6 @@ const LeftPane = styled.div`
   margin-right: 20px;
 `;
 
-const CenterPane = styled.div`
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-  box-sizing: border-box;
-  margin-right: 20px;
-`;
-
-const ImagePlaceholder = styled.div`
-  width: 80%;
-  height: 200px; /* 원하는 이미지 크기에 맞춰 조정 */
-  background-color: #e0e0e0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  color: #888;
-  border-radius: 5px;
-`;
-
 const RightPane = styled.div`
   flex: 1;
   padding: 20px;
@@ -48,15 +26,6 @@ const RightPane = styled.div`
 const SectionTitle = styled.h2`
   font-size: 24px;
   margin-bottom: 20px;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  height: 30px;
-  padding: 5px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  margin-bottom: 10px;
 `;
 
 const Textarea = styled.textarea`
@@ -70,6 +39,23 @@ const Textarea = styled.textarea`
   background-color: #f5f5f5;
   pointer-events: none; /* 수정 불가능 */
   color: #333;
+`;
+
+const ImageUploadContainer = styled.div`
+  margin-top: 10px;
+`;
+
+const ImagePlaceholder = styled.div`
+  width: 100%;
+  height: 200px; /* 원하는 이미지 크기에 맞춰 조정 */
+  background-color: #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #888;
+  border-radius: 5px;
+  margin-top: 10px;
 `;
 
 const NumberInputSection = styled.div`
@@ -152,9 +138,8 @@ const RemoveButton = styled.button`
   }
 `;
 
-const ImageSendPage = ({ setActivePage, previousMessage }) => {
+const ImageSendPage = ({ setActivePage, previousMessage, editedImage }) => {
   const [message] = useState(previousMessage);
-  const [title, setTitle] = useState('');
   const [phoneNumber, setPhoneNumber] = useState({
     part1: '',
     part2: '',
@@ -162,6 +147,13 @@ const ImageSendPage = ({ setActivePage, previousMessage }) => {
   });
   const [recipients, setRecipients] = useState([]);
   const [isSending, setIsSending] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
+
+  useEffect(() => {
+    if (editedImage) {
+      setImagePreview(editedImage);
+    }
+  }, [editedImage]);
 
   const handlePhoneNumberChange = (e, part) => {
     setPhoneNumber({
@@ -172,10 +164,7 @@ const ImageSendPage = ({ setActivePage, previousMessage }) => {
 
   const handleAddPhoneNumber = () => {
     const fullNumber = `${phoneNumber.part1}${phoneNumber.part2}${phoneNumber.part3}`;
-    if (
-      !recipients.includes(fullNumber) &&
-      fullNumber.length === 11
-    ) {
+    if (!recipients.includes(fullNumber) && fullNumber.length === 11) {
       setRecipients([...recipients, fullNumber]);
       setPhoneNumber({ part1: '', part2: '', part3: '' });
     }
@@ -186,11 +175,16 @@ const ImageSendPage = ({ setActivePage, previousMessage }) => {
   };
 
   const handleSendMessage = async () => {
+    if (!imagePreview) {
+      alert('이미지를 선택하세요.');
+      return;
+    }
+
     setIsSending(true);
     try {
       await Promise.all(
         recipients.map((recipient) =>
-          sendMMS(recipient, title, message) // 무조건 sendMMS 호출
+          sendMMS(recipient, message, 'editedImage.jpg', imagePreview)
         )
       );
       alert('모든 메시지 전송 성공!');
@@ -205,19 +199,16 @@ const ImageSendPage = ({ setActivePage, previousMessage }) => {
     <PageContainer>
       <LeftPane>
         <SectionTitle>메시지 전송</SectionTitle>
-        <Input
-            placeholder="제목을 입력하세요."
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-        />
         <Textarea value={message} readOnly />
+        <SectionTitle>이미지</SectionTitle>
+        <ImageUploadContainer>
+          {imagePreview && (
+            <ImagePlaceholder>
+              <img src={imagePreview} alt="이미지 미리보기" style={{ maxWidth: '100%', maxHeight: '200px' }} />
+            </ImagePlaceholder>
+          )}
+        </ImageUploadContainer>
       </LeftPane>
-
-      <CenterPane>
-        <ImagePlaceholder>
-          <span>이미지를 첨부하세요.</span>
-        </ImagePlaceholder>
-      </CenterPane>
 
       <RightPane>
         <NumberInputSection>
@@ -265,9 +256,7 @@ const ImageSendPage = ({ setActivePage, previousMessage }) => {
         </NumberInputSection>
       </RightPane>
 
-      <BackButton onClick={() => setActivePage('MessageInput')}>
-        뒤로가기
-      </BackButton>
+      <BackButton onClick={() => setActivePage('MessageInput')}>뒤로가기</BackButton>
     </PageContainer>
   );
 };

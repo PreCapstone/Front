@@ -30,15 +30,6 @@ const SectionTitle = styled.h2`
   margin-bottom: 20px;
 `;
 
-const Input = styled.input`
-  width: 100%;
-  height: 30px;
-  padding: 5px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  margin-bottom: 10px;
-`;
-
 const Textarea = styled.textarea`
   width: 100%;
   height: 100px;
@@ -50,6 +41,12 @@ const Textarea = styled.textarea`
   background-color: #f5f5f5;
   pointer-events: none; /* 수정 불가능 */
   color: #333;
+`;
+
+const MessageTypeInfo = styled.p`
+  font-size: 14px;
+  color: red;
+  margin-top: 10px;
 `;
 
 const NumberInputSection = styled.div`
@@ -95,7 +92,7 @@ const BackButton = styled.button`
   border: none;
   cursor: pointer;
   width: 150px;
-  position: fixed;
+  position: absolute;
   bottom: 20px;
   left: 20px;
 `;
@@ -131,32 +128,24 @@ const RemoveButton = styled.button`
   }
 `;
 
-const CenterPane = styled.div`
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #f0f0f0;
+// 새로 추가된 스타일
+const ImageUploadContainer = styled.div`
+  margin-top: 10px;
+`;
+
+const ImagePreview = styled.img`
+  max-width: 100%;
+  max-height: 200px;
+  margin-top: 10px;
   border: 1px solid #ddd;
-  border-radius: 5px;
-  padding: 20px; /* 추가된 부분: 패딩을 추가하여 이미지 크기 조정 */
 `;
 
-const ImagePlaceholder = styled.div`
-  width: 80%;
-  height: 40%; /* 높이를 반으로 줄임 */
-  background-color: #e0e0e0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  color: #888;
-  border-radius: 5px;
+const FileInput = styled.input`
+  margin-top: 10px;
 `;
 
-const ImageSendPage = ({ setActivePage, previousMessage }) => {
+const MessageSendPage = ({ setActivePage, previousMessage }) => {
   const [message] = useState(previousMessage);
-  const [title, setTitle] = useState('');
   const [phoneNumber, setPhoneNumber] = useState({
     part1: '',
     part2: '',
@@ -164,6 +153,9 @@ const ImageSendPage = ({ setActivePage, previousMessage }) => {
   });
   const [recipients, setRecipients] = useState([]);
   const [isSending, setIsSending] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [base64Image, setBase64Image] = useState(null);
 
   const byteCount = new TextEncoder().encode(message).length;
   const isMMS = byteCount > 90;
@@ -176,11 +168,8 @@ const ImageSendPage = ({ setActivePage, previousMessage }) => {
   };
 
   const handleAddPhoneNumber = () => {
-    const fullNumber = `${phoneNumber.part1}-${phoneNumber.part2}-${phoneNumber.part3}`;
-    if (
-      !recipients.includes(fullNumber) &&
-      fullNumber.replace(/-/g, '').length === 11
-    ) {
+    const fullNumber = `${phoneNumber.part1}${phoneNumber.part2}${phoneNumber.part3}`;
+    if (!recipients.includes(fullNumber) && fullNumber.length === 11) {
       setRecipients([...recipients, fullNumber]);
       setPhoneNumber({ part1: '', part2: '', part3: '' });
     }
@@ -190,13 +179,27 @@ const ImageSendPage = ({ setActivePage, previousMessage }) => {
     setRecipients(recipients.filter((recipient) => recipient !== number));
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedImage(file);
+      setImagePreview(URL.createObjectURL(file));
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setBase64Image(reader.result.split(',')[1]); // Base64 데이터 추출
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSendMessage = async () => {
     setIsSending(true);
     try {
       await Promise.all(
         recipients.map((recipient) =>
-          byteCount > 90
-            ? sendMMS(recipient, title, message)
+          isMMS
+            ? sendMMS(recipient, message, selectedImage?.name, base64Image)
             : sendSMS(recipient, message)
         )
       );
@@ -213,12 +216,16 @@ const ImageSendPage = ({ setActivePage, previousMessage }) => {
       <FormContainer>
         <LeftPane>
           <SectionTitle>메시지 전송</SectionTitle>
-          <Input
-            placeholder="제목을 입력하세요."
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
           <Textarea value={message} readOnly />
+          {isMMS && (
+            <>
+              <MessageTypeInfo>메시지가 90bytes를 넘어가므로 MMS로 자동 전환됩니다.</MessageTypeInfo>
+              <ImageUploadContainer>
+                <FileInput type="file" accept="image/jpeg" onChange={handleImageChange} />
+                {imagePreview && <ImagePreview src={imagePreview} alt="이미지 미리보기" />}
+              </ImageUploadContainer>
+            </>
+          )}
         </LeftPane>
         <RightPane>
           <NumberInputSection>
@@ -251,11 +258,7 @@ const ImageSendPage = ({ setActivePage, previousMessage }) => {
               {recipients.map((recipient, index) => (
                 <RecipientItem key={index}>
                   {recipient}
-                  <RemoveButton
-                    onClick={() => handleRemoveRecipient(recipient)}
-                  >
-                    X
-                  </RemoveButton>
+                  <RemoveButton onClick={() => handleRemoveRecipient(recipient)}>X</RemoveButton>
                 </RecipientItem>
               ))}
             </RecipientList>
@@ -268,11 +271,9 @@ const ImageSendPage = ({ setActivePage, previousMessage }) => {
           </NumberInputSection>
         </RightPane>
       </FormContainer>
-      <BackButton onClick={() => setActivePage('MessageInput')}>
-        뒤로가기
-      </BackButton>
+      <BackButton onClick={() => setActivePage('MessageInput')}>뒤로가기</BackButton>
     </PageContainer>
   );
 };
 
-export default ImageSendPage;
+export default MessageSendPage;
