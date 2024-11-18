@@ -78,11 +78,13 @@ const RequirementsPage = ({
         setLoading(true);
 
         try {
-            const prompt = `${previousMessage} 키워드: ${selectedKeywords.join(', ')}. ${requirement}`;
-            const generatedImage = await generateImage({ prompt, initImage: selectedSample }); // initImage 추가
+            //const prompt = `${previousMessage} 키워드: ${selectedKeywords.join(', ')}. ${requirement}`;
+            const prompt = `${requirement}`;
+            const generatedImage = await generateImage({ prompt, initImage: selectedSample });
 
             setGeneratedImage(generatedImage);
             setActivePage('ImageEditingPage'); // 이미지 생성 후 편집 페이지로 이동
+            alert('이미지가 성공적으로 생성되었습니다!');
         } catch (error) {
             console.error('이미지 생성 실패:', error);
             alert('이미지 생성에 실패했습니다.');
