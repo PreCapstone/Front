@@ -84,7 +84,9 @@ export const SliderButton = styled.button`
 export const ButtonContainer = styled.div`
     display: flex;
     justify-content: space-between;
+    margin-top: 25px; /* 간격 추가 */
 `;
+
 
 export const ActionButton = styled.button`
     padding: 10px 20px;
