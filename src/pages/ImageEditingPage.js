@@ -17,11 +17,13 @@ const ImageContainer = styled.div`
   position: relative;
   padding: 20px;
   box-sizing: border-box;
+  overflow: hidden;
 `;
 
 const Image = styled.img`
   max-width: 100%;
   max-height: 80%;
+  object-fit: contain;
 `;
 
 const Placeholder = styled.div`
@@ -116,14 +118,37 @@ const HistoryPane = styled.div`
   justify-content: flex-start;
   padding: 20px;
   overflow-y: auto;
-  max-height: 80%; /* 이미지 높이에 맞춰 조정 */
+  max-height: 90%; /* 이미지 높이에 맞춰 조정 */
   border: 1px solid #ddd;
   box-sizing: border-box;
+  width: 300px;
+`;
+
+const HistoryItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
 `;
 
 const HistoryImage = styled.img`
   width: 100%;
+  height: auto; /* 자동으로 높이 조정 */
+  object-fit: contain; /* 이미지 비율 유지하며 컨테이너 안에 맞추기 */
   margin-bottom: 10px;
+`;
+
+const DeleteButton = styled.button`
+  padding: 5px 10px;
+  background-color: red;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: darkred;
+  }
 `;
 
 const ButtonGroup = styled.div`
@@ -201,6 +226,10 @@ const ImageEditingPage = ({
     setActivePage('ImageSendPage', { editedImage: generatedImage }); // 편집된 이미지 전달
   };
 
+  const handleDeleteHistoryImage = (index) => {
+    setImageHistory((prevHistory) => prevHistory.filter((_, i) => i !== index));
+  };
+
   const handleStyleChange = (style) => {
     if (selectedTextIndex !== null) {
       setTexts((prevTexts) => {
@@ -264,9 +293,9 @@ const ImageEditingPage = ({
 
   useEffect(() => {
     if (generatedImage) {
-      setImageHistory([generatedImage, ...imageHistory]);
+        setImageHistory((prevHistory) => [generatedImage, ...prevHistory]);
     }
-  }, [generatedImage, imageHistory, setImageHistory]);
+  }, [generatedImage, setImageHistory]);
 
   return (
     <PageContainer onMouseMove={handleDrag} onMouseUp={handleDragEnd}>
@@ -368,7 +397,12 @@ const ImageEditingPage = ({
       <HistoryPane>
         <h3>히스토리</h3>
         {imageHistory.map((image, index) => (
-          <HistoryImage key={index} src={image} alt={`히스토리 ${index}`} />
+          <HistoryItem key={index}>
+            <HistoryImage src={image} alt={`히스토리 ${index}`} />
+            <DeleteButton onClick={() => handleDeleteHistoryImage(index)}>
+              삭제
+            </DeleteButton>
+          </HistoryItem>
         ))}
       </HistoryPane>
 

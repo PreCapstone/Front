@@ -49,9 +49,10 @@ const App = () => {
               setRequirement={setRequirement} // 전달
               requirement={requirement}      // 전달
               setGeneratedImage={setGeneratedImage}
+              setImageHistory={setImageHistory}
           />
         );
-      case 'ImageEditing':
+      case 'ImageEditingPage':
         return (
           <ImageEditingPage
             generatedImage={generatedImage}

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
     PageContainer,
     Textarea,
-    ByteCount,
     SampleImageLabel,
     SliderContainer,
     SampleImageList,
@@ -18,7 +17,7 @@ const RequirementsPage = ({
                               requirement,
                               setRequirement,
                               setGeneratedImage,
-                              previousMessage,
+                              setImageHistory,
                               selectedKeywords,
                           }) => {
     const [loading, setLoading] = useState(false);
@@ -80,9 +79,11 @@ const RequirementsPage = ({
         try {
             //const prompt = `${previousMessage} 키워드: ${selectedKeywords.join(', ')}. ${requirement}`;
             const prompt = `${requirement}`;
-            const generatedImage = await generateImage({ prompt, initImage: selectedSample });
+            const result = await generateImage({ prompt, initImage: selectedSample });
 
-            setGeneratedImage(generatedImage);
+            console.log("Generated Image URL in RequirementPage:", result);
+            setGeneratedImage(result);
+            setImageHistory((prevHistory) => [result, ...prevHistory]); // 히스토리 업데이트
             setActivePage('ImageEditingPage'); // 이미지 생성 후 편집 페이지로 이동
             alert('이미지가 성공적으로 생성되었습니다!');
         } catch (error) {
@@ -102,7 +103,6 @@ const RequirementsPage = ({
                 onChange={handleTextareaChange}
                 placeholder="요구사항을 입력해주세요."
             />
-            <ByteCount>{new TextEncoder().encode(requirement).length} / 200byte</ByteCount>
 
             <SampleImageLabel>샘플 이미지를 선택</SampleImageLabel>
             <SliderContainer>
