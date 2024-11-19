@@ -46,7 +46,7 @@ export const login = async (loginData) => {
     sessionStorage.setItem('authToken', response.data.token);
 
     // 유저 id 저장 - 다른 api 부를 때 줘야 되니까. const userId = sessionStorage.getItem('userId');로 이후 사용
-    sessionStorage.setItem('userId', loginData.id);
+    sessionStorage.setItem('userId', response.data);
 
     return response.data; // 로그인 성공 시 데이터 반환
 
