@@ -14,6 +14,7 @@ const App = () => {
   const [requirement, setRequirement] = useState(''); // 요구사항 상태 추가
   const [imageHistory, setImageHistory] = useState([]);
   const [generatedImage, setGeneratedImage] = useState(null);
+  const [keywords, setKeywords] = useState([]); // 키워드 상태 추가
 
   const renderPage = () => {
     switch (activePage) {
@@ -38,20 +39,24 @@ const App = () => {
           />
         );
       case 'KeywordSelection':
-        return <KeywordSelectionPage 
-                message={message}  
-                setActivePage={setActivePage}
+        return <KeywordSelectionPage
+            message={message}
+            setActivePage={setActivePage}
+            setKeywords={setKeywords} // 키워드 상태 업데이트 함수 전달
               />;
       case 'Requirements':
         return (
-          <RequirementsPage
-              setActivePage={setActivePage}
-              setRequirement={setRequirement} // 전달
-              requirement={requirement}      // 전달
-              setGeneratedImage={setGeneratedImage}
-              setImageHistory={setImageHistory}
-          />
+            <RequirementsPage
+                setActivePage={setActivePage}
+                setRequirement={setRequirement}
+                requirement={requirement}
+                selectedKeywords={keywords} // 키워드 상태 전달
+                previousMessage={message}  // 이전 메시지 전달
+                setGeneratedImage={setGeneratedImage}
+                setImageHistory={setImageHistory}
+            />
         );
+
       case 'ImageEditingPage':
         return (
           <ImageEditingPage
