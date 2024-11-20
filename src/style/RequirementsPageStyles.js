@@ -100,3 +100,26 @@ export const ActionButton = styled.button`
         background-color: ${({ primary }) => (primary ? '#531299' : '#bbb')};
     }
 `;
+
+export const UploadContainer = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin: 15px 0;
+    gap: 10px;
+`;
+
+export const UploadLabel = styled.label`
+    padding: 10px 15px;
+    background-color: #0066ff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    text-align: center;
+
+    &:hover {
+        background-color: #004bb5;
+    }
+`;

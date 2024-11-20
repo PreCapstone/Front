@@ -9,6 +9,8 @@ import {
     SliderButton,
     ButtonContainer,
     ActionButton,
+    UploadContainer,
+    UploadLabel,
 } from '../style/RequirementsPageStyles';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ModalOverlay from '../components/ModalOverlay';
@@ -28,14 +30,17 @@ const RequirementsPage = ({
     const [selectedSample, setSelectedSample] = useState(null);
     const [currentOffset, setCurrentOffset] = useState(0);
     const [sampleImages, setSampleImages] = useState([]);
-    const [elapsedTime, setElapsedTime] = useState(null); // 소요 시간 상태 추가
+    const [elapsedTime, setElapsedTime] = useState(null);
+    const [userId] = useState(sessionStorage.getItem('userId') || '1'); // 사용자 ID
+    const [uploadedImage, setUploadedImage] = useState(null);
 
     const imageWidth = 120 + 10;
     const maxVisibleImages = 7;
 
+    // 샘플 이미지 가져오기
     useEffect(() => {
         const fetchSampleImages = async () => {
-            const url = 'http://3.38.60.170:8080/get-sample';
+            const url = 'http://3.38.60.170:8080/get-sample'; // 서버 IP 사용
             setIsLoading(true);
             try {
                 const response = await fetch(url, {
@@ -71,25 +76,7 @@ const RequirementsPage = ({
 
     const maxOffset = -(Math.ceil(sampleImages.length / maxVisibleImages) - 1) * (imageWidth * maxVisibleImages);
 
-    const handleTextareaChange = (e) => {
-        setRequirement(e.target.value);
-    };
-
-    const handleImageClick = (image) => {
-        setSelectedSample(image);
-    };
-
-    const handleSlider = (direction) => {
-        if (direction === 'left' && currentOffset < 0) {
-            setCurrentOffset((prev) => prev + imageWidth * maxVisibleImages);
-        } else if (direction === 'right' && currentOffset > maxOffset) {
-            setCurrentOffset((prev) => prev - imageWidth * maxVisibleImages);
-        }
-    };
-
     const translatePrompt = async (prompt) => {
-        const id = sessionStorage.getItem('userId') || '1';
-
         try {
             const response = await fetch('http://3.38.60.170:8080/GPT/api/create-sd-prompt', {
                 method: 'POST',
@@ -98,7 +85,7 @@ const RequirementsPage = ({
                 },
                 body: JSON.stringify({
                     userPrompt: prompt,
-                    id: id,
+                    id: userId,
                 }),
             });
 
@@ -120,6 +107,59 @@ const RequirementsPage = ({
             throw error;
         }
     };
+
+    const handleTextareaChange = (e) => {
+        setRequirement(e.target.value);
+    };
+
+    const handleImageClick = (image) => {
+        setSelectedSample(image);
+    };
+
+    const handleSlider = (direction) => {
+        if (direction === 'left' && currentOffset < 0) {
+            setCurrentOffset((prev) => prev + imageWidth * maxVisibleImages);
+        } else if (direction === 'right' && currentOffset > maxOffset) {
+            setCurrentOffset((prev) => prev - imageWidth * maxVisibleImages);
+        }
+    };
+
+    const handleFileUpload = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('id', userId);
+
+        try {
+            const response = await fetch('http://3.38.60.170:8080/user/upload', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP 오류 상태: ${response.status}`);
+            }
+
+            // 서버가 JSON 대신 문자열을 반환하는 경우
+            const responseData = await response.text();
+            console.log('Server Response:', responseData);
+
+            // 서버 응답이 URL 문자열인 경우
+            if (responseData.startsWith('http')) {
+                setUploadedImage(responseData); // 업로드된 이미지의 URL 저장
+                setSampleImages((prev) => [responseData, ...prev]); // 새 이미지 샘플 리스트에 추가
+                alert('이미지가 성공적으로 업로드되었습니다.');
+            } else {
+                throw new Error('Unexpected response format');
+            }
+        } catch (error) {
+            console.error('이미지 업로드 실패:', error);
+            alert('이미지 업로드에 실패했습니다.');
+        }
+    };
+
 
     const handleGenerateImage = async () => {
         if (!requirement) {
@@ -154,12 +194,9 @@ const RequirementsPage = ({
             const timeElapsed = ((endTime - startTime) / 1000).toFixed(2);
             setElapsedTime(timeElapsed);
 
-            setGeneratedImage(result); // 생성된 이미지 저장
-            setImageHistory((prevHistory) => [result, ...prevHistory]); // 히스토리 업데이트
-            setActivePage('ImageEditingPage'); // 페이지 전환
-
-            console.log('Image generated successfully:', result);
-            console.log('Page switched to ImageEditingPage');
+            setGeneratedImage(result);
+            setImageHistory((prevHistory) => [result, ...prevHistory]);
+            setActivePage('ImageEditingPage');
         } catch (error) {
             console.error('이미지 생성 실패:', error);
             alert('이미지 생성에 실패했습니다.');
@@ -167,7 +204,6 @@ const RequirementsPage = ({
             setLoading(false);
         }
     };
-
 
     return (
         <PageContainer>
@@ -188,7 +224,17 @@ const RequirementsPage = ({
                         onChange={handleTextareaChange}
                         placeholder="요구사항을 입력해주세요."
                     />
-                    <SampleImageLabel>샘플 이미지를 선택</SampleImageLabel>
+                    <SampleImageLabel>샘플 이미지를 선택하거나 새로 업로드</SampleImageLabel>
+                    <UploadContainer>
+                        <UploadLabel htmlFor="file-upload">이미지 업로드</UploadLabel>
+                        <input
+                            id="file-upload"
+                            type="file"
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={handleFileUpload}
+                        />
+                    </UploadContainer>
                     <SliderContainer>
                         <SliderButton direction="left" onClick={() => handleSlider('left')}>
                             ‹
