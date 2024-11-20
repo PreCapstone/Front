@@ -10,9 +10,9 @@ import {
     ButtonContainer,
     ActionButton,
 } from '../style/RequirementsPageStyles';
-import LoadingSpinner from '../components/LoadingSpinner'; // 로딩 스피너 추가
-import ModalOverlay from '../components/ModalOverlay'; // 모달 오버레이 추가
-import { generateImage } from '../services/imageService'; // 이미지 생성 서비스 가져오기
+import LoadingSpinner from '../components/LoadingSpinner';
+import ModalOverlay from '../components/ModalOverlay';
+import { generateImage } from '../services/imageService';
 
 const RequirementsPage = ({
                               setActivePage,
@@ -24,19 +24,19 @@ const RequirementsPage = ({
                               previousMessage,
                           }) => {
     const [loading, setLoading] = useState(false);
-    const [isLoading, setIsLoading] = useState(false); // 샘플 이미지 로딩 상태
+    const [isLoading, setIsLoading] = useState(false);
     const [selectedSample, setSelectedSample] = useState(null);
     const [currentOffset, setCurrentOffset] = useState(0);
     const [sampleImages, setSampleImages] = useState([]);
+    const [elapsedTime, setElapsedTime] = useState(null); // 소요 시간 상태 추가
 
-    const imageWidth = 120 + 10; // 이미지 가로 크기 + gap
-    const maxVisibleImages = 7; // 한번에 보여줄 이미지 개수
+    const imageWidth = 120 + 10;
+    const maxVisibleImages = 7;
 
-    // Sample Images 가져오기
     useEffect(() => {
         const fetchSampleImages = async () => {
-            const url = 'http://3.38.60.170:8080/get-sample'; // 실제 서버 URL 사용
-            setIsLoading(true); // 로딩 시작
+            const url = 'http://3.38.60.170:8080/get-sample';
+            setIsLoading(true);
             try {
                 const response = await fetch(url, {
                     method: 'GET',
@@ -62,7 +62,7 @@ const RequirementsPage = ({
                 console.error('Sample Images 가져오기 실패:', error);
                 alert('샘플 이미지를 가져오는 데 실패했습니다.');
             } finally {
-                setIsLoading(false); // 로딩 종료
+                setIsLoading(false);
             }
         };
 
@@ -103,7 +103,6 @@ const RequirementsPage = ({
             });
 
             const responseText = await response.text();
-            console.log('GPT API 응답 (텍스트):', responseText);
 
             if (!response.ok) {
                 throw new Error(`HTTP 오류 상태: ${response.status}, 응답: ${responseText}`);
@@ -121,7 +120,6 @@ const RequirementsPage = ({
             throw error;
         }
     };
-
 
     const handleGenerateImage = async () => {
         if (!requirement) {
@@ -142,14 +140,26 @@ const RequirementsPage = ({
         setLoading(true);
 
         try {
+            const startTime = performance.now();
+
             const userPrompt = `${previousMessage} 키워드: ${selectedKeywords.join(', ')}. ${requirement}`;
             const englishPrompt = await translatePrompt(userPrompt);
             const result = await generateImage({ prompt: englishPrompt, initImage: selectedSample });
 
-            setGeneratedImage(result);
-            setImageHistory((prevHistory) => [result, ...prevHistory]);
-            setActivePage('ImageEditingPage');
-            alert('이미지가 성공적으로 생성되었습니다!');
+            if (!result) {
+                throw new Error('이미지 생성 결과가 비어 있습니다.');
+            }
+
+            const endTime = performance.now();
+            const timeElapsed = ((endTime - startTime) / 1000).toFixed(2);
+            setElapsedTime(timeElapsed);
+
+            setGeneratedImage(result); // 생성된 이미지 저장
+            setImageHistory((prevHistory) => [result, ...prevHistory]); // 히스토리 업데이트
+            setActivePage('ImageEditingPage'); // 페이지 전환
+
+            console.log('Image generated successfully:', result);
+            console.log('Page switched to ImageEditingPage');
         } catch (error) {
             console.error('이미지 생성 실패:', error);
             alert('이미지 생성에 실패했습니다.');
@@ -158,16 +168,21 @@ const RequirementsPage = ({
         }
     };
 
+
     return (
         <PageContainer>
-            {isLoading && (
+            {isLoading ? (
                 <ModalOverlay>
                     <LoadingSpinner text="샘플 이미지를 가져오는 중입니다..." />
                 </ModalOverlay>
-            )}
-            {!isLoading && (
+            ) : (
                 <>
                     <h1>요구사항을 적어주세요</h1>
+                    {elapsedTime && (
+                        <p style={{ fontSize: '16px', marginBottom: '20px' }}>
+                            이미지 생성 소요 시간: <strong>{elapsedTime}초</strong>
+                        </p>
+                    )}
                     <Textarea
                         value={requirement}
                         onChange={handleTextareaChange}

@@ -59,13 +59,14 @@ const App = () => {
 
       case 'ImageEditingPage':
         return (
-          <ImageEditingPage
-            generatedImage={generatedImage}
-            imageHistory={imageHistory}
-            setImageHistory={setImageHistory}
-            setActivePage={setActivePage}
-          />
+            <ImageEditingPage
+                generatedImage={generatedImage}
+                imageHistory={imageHistory}
+                setImageHistory={setImageHistory}
+                setActivePage={setActivePage}
+            />
         );
+
       case 'SMSPage': // SMSPage 전달
         return <SMSPage previousMessage={message} setActivePage={setActivePage} />;
       case 'ImageSendPage':
