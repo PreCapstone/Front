@@ -123,3 +123,11 @@ export const UploadLabel = styled.label`
         background-color: #004bb5;
     }
 `;
+
+export const CheckboxContainer = styled.div`
+    margin-top: 20px; /* 샘플 이미지와 체크박스 사이에 간격 추가 */
+    display: flex;
+    align-items: center;
+    gap: 10px; /* 체크박스와 텍스트 사이 간격 */
+`;
+

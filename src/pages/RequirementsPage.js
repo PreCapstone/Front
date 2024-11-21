@@ -11,6 +11,7 @@ import {
     ActionButton,
     UploadContainer,
     UploadLabel,
+    CheckboxContainer,
 } from '../style/RequirementsPageStyles';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ModalOverlay from '../components/ModalOverlay';
@@ -167,14 +168,14 @@ const RequirementsPage = ({
                         </SliderButton>
                     </SliderContainer>
                     <div>
-                        <label>
+                        <CheckboxContainer>
                             <input
                                 type="checkbox"
                                 checked={useNegativePrompt}
                                 onChange={() => setUseNegativePrompt((prev) => !prev)}
                             />
-                            GPT에게 프롬프트 부탁하기
-                        </label>
+                        <label>GPT에게 프롬프트 부탁하기</label>
+                        </CheckboxContainer>
                     </div>
                     <ButtonContainer>
                         <ActionButton onClick={() => setActivePage('KeywordSelection')}>← 이전</ActionButton>
