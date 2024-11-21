@@ -24,6 +24,7 @@ const RequirementsPage = ({
                               setImageHistory,
                               selectedKeywords,
                               previousMessage,
+                              setGenerationTime,
                           }) => {
     const [loading, setLoading] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -205,6 +206,7 @@ const RequirementsPage = ({
 
             setGeneratedImage(result);
             setImageHistory((prevHistory) => [result, ...prevHistory]);
+            setGenerationTime(result.time);
             setActivePage('ImageEditingPage');
         } catch (error) {
             console.error('이미지 생성 실패:', error);

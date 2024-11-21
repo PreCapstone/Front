@@ -5,6 +5,7 @@ import logo from '../assets/new_logo_vertical.png';
 import { logout } from '../services/authService';
 import { SECONDARY_COLOR } from '../style/colors';
 import { OTHER_COLOR } from '../style/colors';
+import logoImage from '../assets/logo.png';
 
 const MenuContainer = styled.div`
   display: flex;
@@ -75,10 +76,16 @@ const LogoutButton = styled(MenuItem)`
   width: 100%;
 `;
 
-const MenuBar = ({ activePage, setActivePage }) => {
+const MenuBar = ({ activePage, setActivePage, setGeneratedImage }) => {
   const handleLogout = () => {
     logout(); // 세션에서 토큰 제거
     setActivePage('LoginPage'); // 로그인 페이지로 이동
+  };
+
+  const handleImageEditing = () => {
+    const defaultImage = logoImage; // 기본 이미지 URL (또는 로컬 경로)
+    setGeneratedImage(defaultImage); // 기본 이미지를 설정
+    setActivePage('ImageEditingPage'); // 이미지 편집 페이지로 이동
   };
 
   return (
@@ -94,7 +101,7 @@ const MenuBar = ({ activePage, setActivePage }) => {
         <MenuItem active={activePage === 'Requirements'} onClick={() => setActivePage('Requirements')}>
           <FaClipboardList /> 요구사항
         </MenuItem>
-        <MenuItem active={activePage === 'ImageEditing'} onClick={() => setActivePage('ImageEditing')}>
+        <MenuItem active={activePage === 'ImageEditing'} onClick={handleImageEditing}>
           <FaImage /> 이미지 편집
         </MenuItem>
       </TopSection>

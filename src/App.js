@@ -15,6 +15,8 @@ const App = () => {
   const [imageHistory, setImageHistory] = useState([]);
   const [generatedImage, setGeneratedImage] = useState(null);
   const [keywords, setKeywords] = useState([]); // 키워드 상태 추가
+  const [editedImage, setEditedImage] = useState(null); // 편집된 이미지 상태 추가
+  const [generationTime, setGenerationTime] = useState(null);
 
   const renderPage = () => {
     switch (activePage) {
@@ -54,29 +56,39 @@ const App = () => {
                 previousMessage={message}  // 이전 메시지 전달
                 setGeneratedImage={setGeneratedImage}
                 setImageHistory={setImageHistory}
+                setGenerationTime={setGenerationTime}
             />
         );
 
       case 'ImageEditingPage':
         return (
-            <ImageEditingPage
-                generatedImage={generatedImage}
-                imageHistory={imageHistory}
-                setImageHistory={setImageHistory}
-                setActivePage={setActivePage}
-            />
+          <ImageEditingPage
+            generatedImage={generatedImage}
+            imageHistory={imageHistory}
+            setImageHistory={setImageHistory}
+            setActivePage={setActivePage}
+            setGeneratedImage={setGeneratedImage}
+            generationTime={generationTime}
+          />
         );
-
       case 'SMSPage': // SMSPage 전달
         return <SMSPage previousMessage={message} setActivePage={setActivePage} />;
-      case 'ImageSendPage':
-        return <ImageSendPage previousMessage={message} setActivePage={setActivePage} />;
+        case 'ImageSendPage':
+          return (
+            <ImageSendPage
+              previousMessage={message}
+              setActivePage={setActivePage}
+              generatedImage={generatedImage} // 기본 생성 이미지
+              editedImage={editedImage}       // 편집된 이미지
+            />
+          );        
       default:
         return (
           <MessageInputPage
             setActivePage={setActivePage}
             setMessage={setMessage}
             message={message}
+            editedImage={generatedImage}
           />
         );
     }
@@ -87,7 +99,7 @@ const App = () => {
   return (
     <div style={{ display: activePage === 'SMSPage' ? 'block' : 'flex', height: '100vh' }}>
       {shouldShowMenuBar && (
-        <MenuBar activePage={activePage} setActivePage={setActivePage} />
+        <MenuBar activePage={activePage} setActivePage={setActivePage} setGeneratedImage={setGeneratedImage} />
       )}
       <div style={{ flexGrow: 1, padding: '0px' }}>{renderPage()}</div>
     </div>

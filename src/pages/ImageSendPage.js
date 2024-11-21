@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { sendMMS } from '../services/messageService'; // 서비스 임포트
+import { sendMMS } from '../services/messageService'; // MMS 전송 함수 임포트
 
 const PageContainer = styled.div`
   display: flex;
@@ -47,8 +47,7 @@ const ImageUploadContainer = styled.div`
 
 const ImagePlaceholder = styled.div`
   width: 100%;
-  height: 200px; /* 원하는 이미지 크기에 맞춰 조정 */
-  background-color: #e0e0e0;
+  height: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -138,7 +137,7 @@ const RemoveButton = styled.button`
   }
 `;
 
-const ImageSendPage = ({ setActivePage, previousMessage, editedImage }) => {
+const ImageSendPage = ({ setActivePage, previousMessage, generatedImage, editedImage }) => {
   const [message] = useState(previousMessage);
   const [phoneNumber, setPhoneNumber] = useState({
     part1: '',
@@ -148,12 +147,24 @@ const ImageSendPage = ({ setActivePage, previousMessage, editedImage }) => {
   const [recipients, setRecipients] = useState([]);
   const [isSending, setIsSending] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
+    console.log("editedImage:", editedImage);
+    console.log("generatedImage:", generatedImage);
+    
     if (editedImage) {
-      setImagePreview(editedImage);
+      setSelectedImage({ imgUrl: editedImage });
+    } else if (generatedImage) {
+      setSelectedImage({ imgUrl: generatedImage });
     }
-  }, [editedImage]);
+  }, [editedImage, generatedImage]);  
+
+  useEffect(() => {
+    if (selectedImage) {
+      setImagePreview(selectedImage);
+    }
+  }, [selectedImage]);
 
   const handlePhoneNumberChange = (e, part) => {
     setPhoneNumber({
@@ -164,9 +175,16 @@ const ImageSendPage = ({ setActivePage, previousMessage, editedImage }) => {
 
   const handleAddPhoneNumber = () => {
     const fullNumber = `${phoneNumber.part1}${phoneNumber.part2}${phoneNumber.part3}`;
-    if (!recipients.includes(fullNumber) && fullNumber.length === 11) {
+    if (fullNumber.length !== 11 || isNaN(fullNumber)) {
+      alert('올바른 전화번호를 입력하세요.');
+      return;
+    }
+
+    if (!recipients.includes(fullNumber)) {
       setRecipients([...recipients, fullNumber]);
       setPhoneNumber({ part1: '', part2: '', part3: '' });
+    } else {
+      alert('이미 추가된 번호입니다.');
     }
   };
 
@@ -175,37 +193,37 @@ const ImageSendPage = ({ setActivePage, previousMessage, editedImage }) => {
   };
 
   const handleSendMessage = async () => {
-    if (!imagePreview) {
-      alert('이미지를 선택하세요.');
+    if (!selectedImage || !selectedImage.imgUrl) {
+      alert('이미지를 선택하거나 올바른 이미지 URL을 확인하세요.');
       return;
     }
   
-    // 이미지 데이터 가져오기
-    const file = new File([editedImage], 'editedImage.jpg', { type: 'image/jpeg' });
-    const fileName = file.name;
-    const fileSize = file.size;
-    
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const fileData = reader.result.split(',')[1]; // Base64 인코딩 데이터 추출
+    const imgUrl = selectedImage.imgUrl;
   
-      setIsSending(true);
-      try {
-        await Promise.all(
-          recipients.map((recipient) =>
-            sendMMS(recipient, message, fileName, fileData, fileSize)
-          )
-        );
-        alert('모든 메시지 전송 성공!');
-      } catch (error) {
-        alert('일부 메시지 전송 실패: ' + error.message);
-      } finally {
-        setIsSending(false);
-      }
-    };
-    reader.readAsDataURL(file); // Base64로 변환
+    try {
+      // 모든 수신자에게 메시지 전송
+      const responses = await Promise.all(
+        recipients.map((recipient) =>
+          sendMMS(recipient, message, imgUrl, {}) // changeWords는 필요 시 빈 객체로 전달
+        )
+      );
+  
+      // 성공 여부 확인
+      responses.forEach((response, index) => {
+        if (response?.code === '1000') {
+          console.log(`메시지 전송 성공: ${recipients[index]}`);
+        } else {
+          console.error(`메시지 전송 실패(${recipients[index]}):`, response);
+        }
+      });
+  
+      alert('모든 메시지가 성공적으로 전송되었습니다!');
+    } catch (error) {
+      console.error('전송 실패:', error);
+      alert(`전송 실패: ${error.response?.data || error.message}`);
+    }
   };  
-
+  
   return (
     <PageContainer>
       <LeftPane>
@@ -213,10 +231,12 @@ const ImageSendPage = ({ setActivePage, previousMessage, editedImage }) => {
         <Textarea value={message} readOnly />
         <SectionTitle>이미지</SectionTitle>
         <ImageUploadContainer>
-          {imagePreview && (
+          {imagePreview ? (
             <ImagePlaceholder>
-              <img src={imagePreview} alt="이미지 미리보기" style={{ maxWidth: '100%', maxHeight: '200px' }} />
+              <img src={imagePreview.imgUrl || imagePreview} alt="이미지 미리보기" style={{ maxWidth: '100%', maxHeight: '200px' }} />
             </ImagePlaceholder>
+          ) : (
+            <ImagePlaceholder>이미지가 없습니다.</ImagePlaceholder>
           )}
         </ImageUploadContainer>
       </LeftPane>

@@ -42,7 +42,7 @@ export const sendSMS = async (recipient, message, changeWords = {}) => {
  * @param {string} message - 전송할 메시지
  * @returns {Promise} - API 응답
  */
-export const sendMMS = async (recipient, message, fileName, fileData, fileSize, changeWords = {}) => {
+export const sendMMS = async (recipient, message, imgUrl, changeWords = {}) => {
   try {
     const requestBody = {
       content: message,          // 메시지 내용
@@ -56,11 +56,7 @@ export const sendMMS = async (recipient, message, fileName, fileData, fileSize, 
         },
       ],
       refKey: `ref_${Date.now()}`,          // 고유 참조 키
-      files: fileName && fileData ? [{
-        name: fileName,
-        data: fileData,
-        size: fileSize,
-      }] : [],
+      imgUrl: imgUrl,
     };
 
     const response = await axios.post(`${process.env.REACT_APP_SERVER_IP}/ppurio/message/send-MMS`, requestBody, {
