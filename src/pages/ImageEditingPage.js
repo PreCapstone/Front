@@ -141,16 +141,16 @@ const HistoryImage = styled.img`
   margin-bottom: 10px;
 `;
 
-const DeleteButton = styled.button`
+const SelectButton = styled.button`
   padding: 5px 10px;
-  background-color: red;
+  background-color: green;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
 
   &:hover {
-    background-color: darkred;
+    background-color: darkgreen;
   }
 `;
 
@@ -237,6 +237,7 @@ const ImageEditingPage = ({
   const [stickers, setStickers] = useState([]);
   const [draggingIndex, setDraggingIndex] = useState(null);
   const [dragStartPosition, setDragStartPosition] = useState({ x: 0, y: 0 });
+  const [currentImage, setCurrentImage] = useState(generatedImage);
 
   const colors = ['red', 'blue', 'green', 'black', 'yellow'];
 
@@ -268,8 +269,8 @@ const ImageEditingPage = ({
     setActivePage('ImageSendPage', { editedImage: generatedImage }); // 편집된 이미지 전달
   };
 
-  const handleDeleteHistoryImage = (index) => {
-    setImageHistory((prevHistory) => prevHistory.filter((_, i) => i !== index));
+  const handleSelectHistoryImage = (image) => {
+    setCurrentImage(image);
   };
 
     const handleStyleChange = (style) => {
@@ -334,10 +335,22 @@ const ImageEditingPage = ({
   };
 
   useEffect(() => {
-    if (generatedImage) {
-        setImageHistory((prevHistory) => [generatedImage, ...prevHistory]);
-    }
-  }, [generatedImage, setImageHistory]);
+    const fetchUserImages = async () => {
+      const userId = sessionStorage.getItem('userId');
+      if (!userId) {
+        console.error('사용자 ID가 없습니다.');
+        return;
+      }
+      try {
+        const images = await getUserImages(userId);
+        setImageHistory(images.map((image) => image.userImage).reverse());
+      } catch (error) {
+        console.error('Error fetching user images:', error);
+      }
+    };
+  
+    fetchUserImages();
+  }, []);
 
   return (
     <PageContainer onMouseMove={handleDrag} onMouseUp={handleDragEnd}>
@@ -389,8 +402,8 @@ const ImageEditingPage = ({
       )}
 
       <ImageContainer>
-        {generatedImage ? (
-          <Image src={generatedImage} alt="Generated" />
+        {currentImage ? (
+          <Image src={currentImage} alt="Selected" />
         ) : (
           <Placeholder>이미지가 없습니다.</Placeholder>
         )}
@@ -441,9 +454,9 @@ const ImageEditingPage = ({
         {imageHistory.map((image, index) => (
           <HistoryItem key={index}>
             <HistoryImage src={image} alt={`히스토리 ${index}`} />
-            <DeleteButton onClick={() => handleDeleteHistoryImage(index)}>
-              삭제
-            </DeleteButton>
+            <SelectButton onClick={() => handleSelectHistoryImage(image)}>
+              선택
+            </SelectButton>
           </HistoryItem>
         ))}
       </HistoryPane>

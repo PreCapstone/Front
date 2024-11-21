@@ -287,7 +287,7 @@ const ImageSendPage = ({ setActivePage, previousMessage, generatedImage, editedI
         </NumberInputSection>
       </RightPane>
 
-      <BackButton onClick={() => setActivePage('MessageInput')}>뒤로가기</BackButton>
+      <BackButton onClick={() => setActivePage('ImageEditingPage')}>뒤로가기</BackButton>
     </PageContainer>
   );
 };
