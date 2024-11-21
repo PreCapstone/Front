@@ -97,16 +97,19 @@ const RequirementsPage = ({
 
             if (responseText.startsWith('{')) {
                 const data = JSON.parse(responseText);
+                console.log('번역된 프롬프트:', data.translatedPrompt);
                 return data.translatedPrompt;
             } else {
+                console.log('번역된 프롬프트 (텍스트):', responseText.trim());
                 return responseText.trim();
             }
         } catch (error) {
-            console.error('GPT API 호출 실패:', error);
+            console.error('프롬프트 변환 실패:', error);
             alert('프롬프트 변환에 실패했습니다. 서버 상태를 확인해주세요.');
             throw error;
         }
     };
+
 
     const handleTextareaChange = (e) => {
         setRequirement(e.target.value);
@@ -182,9 +185,15 @@ const RequirementsPage = ({
         try {
             const startTime = performance.now();
 
+            // 요구사항 및 키워드를 포함한 최종 프롬프트 생성
             const userPrompt = `${previousMessage} 키워드: ${selectedKeywords.join(', ')}. ${requirement}`;
-            const englishPrompt = await translatePrompt(userPrompt);
-            const result = await generateImage({ prompt: englishPrompt, initImage: selectedSample });
+            const englishPrompt = await translatePrompt(userPrompt); // 영어 번역 처리
+
+            // 이미지 생성 요청
+            const result = await generateImage({
+                prompt: englishPrompt,
+                initImage: selectedSample,
+            });
 
             if (!result) {
                 throw new Error('이미지 생성 결과가 비어 있습니다.');
@@ -204,6 +213,7 @@ const RequirementsPage = ({
             setLoading(false);
         }
     };
+
 
     return (
         <PageContainer>
