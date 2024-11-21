@@ -35,6 +35,7 @@ const RequirementsPage = ({
     const [currentOffset, setCurrentOffset] = useState(0);
     const [sampleImages, setSampleImages] = useState([]);
     const [elapsedTime, setElapsedTime] = useState(null);
+    const [useNegativePrompt, setUseNegativePrompt] = useState(false); // 체크박스 상태 추가
     const userId = sessionStorage.getItem('userId') || '1'; // 사용자 ID
 
     const imageWidth = 120 + 10;
@@ -94,6 +95,8 @@ const RequirementsPage = ({
             return;
         }
 
+        console.log("negativePrompt 상태:", useNegativePrompt); // 디버깅용 로그 추가
+
         setLoading(true);
 
         try {
@@ -103,6 +106,7 @@ const RequirementsPage = ({
             const result = await generateImage({
                 prompt: translatedPrompt,
                 initImage: selectedSample,
+                negativePrompt: useNegativePrompt, // 상태 전달
             });
 
             setGeneratedImage(result);
@@ -115,6 +119,7 @@ const RequirementsPage = ({
             setLoading(false);
         }
     };
+
 
     return (
         <PageContainer>
@@ -161,6 +166,16 @@ const RequirementsPage = ({
                             ›
                         </SliderButton>
                     </SliderContainer>
+                    <div>
+                        <label>
+                            <input
+                                type="checkbox"
+                                checked={useNegativePrompt}
+                                onChange={() => setUseNegativePrompt((prev) => !prev)}
+                            />
+                            GPT에게 프롬프트 부탁하기
+                        </label>
+                    </div>
                     <ButtonContainer>
                         <ActionButton onClick={() => setActivePage('KeywordSelection')}>← 이전</ActionButton>
                         <ActionButton primary onClick={handleGenerateImage} disabled={loading}>

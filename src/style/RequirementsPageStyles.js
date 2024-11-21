@@ -52,13 +52,13 @@ export const SampleImageList = styled.div`
 export const SampleImage = styled.img`
     width: 120px;
     height: 120px;
-    border: 2px solid ${({ selected }) => (selected ? '#6a1bb3' : '#ccc')};
+    border: 4px solid ${({selected}) => (selected ? '#e20e0e' : '#ccc')}; /* 선택된 경우 두께를 4px로 설정 */
     border-radius: 5px;
     cursor: pointer;
-    transition: border-color 0.3s;
+    transition: border-color 0.3s, border-width 0.3s; /* 선의 두께와 색상 변화에 애니메이션 추가 */
 
     &:hover {
-        border-color: #6a1bb3;
+        border-color: #e20e0e;
     }
 `;
 

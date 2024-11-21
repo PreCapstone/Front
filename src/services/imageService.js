@@ -7,7 +7,7 @@ import axios from 'axios';
  * @param {string} params.initImage - 초기 이미지 URL
  * @returns {Promise<string>} - 생성된 이미지 URL
  */
-export const generateImage = async ({ prompt, initImage }) => {
+export const generateImage = async ({ prompt, initImage, negativePrompt }) => {
   const serverIP = process.env.REACT_APP_SERVER_IP;
 
   if (!serverIP) {
@@ -27,12 +27,11 @@ export const generateImage = async ({ prompt, initImage }) => {
   }
 
   try {
-    // 요청 데이터에 negativePrompt 강제 포함
     const payload = {
       id,
       prompt,
       initImage,
-      negativePrompt: true, // 항상 추가
+      negativePrompt,
     };
 
     console.log('최종 요청 데이터:', payload); // 요청 데이터 로깅
