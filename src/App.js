@@ -67,7 +67,7 @@ const App = () => {
             imageHistory={imageHistory}
             setImageHistory={setImageHistory}
             setActivePage={setActivePage}
-            setGeneratedImage={setGeneratedImage}
+            setEditedImage={setEditedImage}
             generationTime={generationTime}
           />
         );

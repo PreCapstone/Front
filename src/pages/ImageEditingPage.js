@@ -228,6 +228,7 @@ const ImageEditingPage = ({
   imageHistory = [],
   setImageHistory,
   setActivePage,
+  setEditedImage,
 }) => {
   const [showTextEdit, setShowTextEdit] = useState(false);
   const [showStickerEdit, setShowStickerEdit] = useState(false);
@@ -266,7 +267,8 @@ const ImageEditingPage = ({
   };
 
   const handleCompleteClick = () => {
-    setActivePage('ImageSendPage', { editedImage: generatedImage }); // 편집된 이미지 전달
+    setEditedImage(currentImage); // 선택된 이미지를 편집된 이미지 상태로 저장
+    setActivePage('ImageSendPage'); // 발송 페이지로 이동
   };
 
   const handleSelectHistoryImage = (image) => {
