@@ -61,14 +61,18 @@ const App = () => {
         );
 
       case 'ImageEditingPage':
-        return (
-          <ImageEditingPage
-            generatedImage={generatedImage}
-            imageHistory={imageHistory}
-            setImageHistory={setImageHistory}
-            setActivePage={setActivePage}
-          />
-        );
+      return (
+        <ImageEditingPage
+          generatedImage={generatedImage}
+          imageHistory={imageHistory}
+          setImageHistory={setImageHistory}
+          setActivePage={setActivePage}
+          setGeneratedImage={setGeneratedImage}
+          setEditedImage={setEditedImage} // 편집된 이미지 저장 함수 전달
+          generationTime={generationTime}
+        />
+      );
+    
       case 'SMSPage': // SMSPage 전달
         return <SMSPage previousMessage={message} setActivePage={setActivePage} />;
         case 'ImageSendPage':

@@ -229,6 +229,8 @@ const ImageEditingPage = ({
   imageHistory = [],
   setImageHistory,
   setActivePage,
+  setEditedImage,
+  generationTime,
 }) => {
   const [showTextEdit, setShowTextEdit] = useState(false);
   const [showStickerEdit, setShowStickerEdit] = useState(false);
@@ -239,8 +241,14 @@ const ImageEditingPage = ({
   const [stickers, setStickers] = useState([]);
   const [draggingIndex, setDraggingIndex] = useState(null);
   const [dragStartPosition, setDragStartPosition] = useState({ x: 0, y: 0 });
+  const [fontSize, setFontSize] = useState(16); // 글씨 크기 상태
+  const [fontFamily, setFontFamily] = useState('Arial'); // 글꼴 상태
+  const [loading, setLoading] = useState(true); // 로딩 상태 관리
+  const [selectedImage, setSelectedImage] = useState(generatedImage);
+  const [colorPickerVisible, setColorPickerVisible] = useState(false);
+  const [currentColor, setCurrentColor] = useState('#000000');
 
-  const colors = ['red', 'blue', 'green', 'black', 'yellow'];
+  const fonts = ['Malgun Gothic', 'Arial', 'Courier New', 'Georgia', 'Times New Roman', 'Verdana', 'Helvetica', 'Trebuchet MS', 'Tahoma', 'Dotum', 'Gulim']; // 글꼴 리스트
 
   const handleAddText = () => {
     if (textInput.trim()) {
@@ -281,13 +289,64 @@ const ImageEditingPage = ({
     }
   };
 
-  const handleCompleteClick = () => {
-    setActivePage('ImageSendPage', { editedImage: generatedImage }); // 편집된 이미지 전달
-  };
-
-  const handleDeleteHistoryImage = (index) => {
-    setImageHistory((prevHistory) => prevHistory.filter((_, i) => i !== index));
-  };
+  const handleCompleteClick = async () => {
+    if (!selectedImage) {
+      alert("선택된 이미지가 없습니다. 이미지를 선택하세요.");
+      return;
+    }
+  
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new window.Image();
+  
+    img.crossOrigin = "anonymous";
+    img.src = selectedImage;
+  
+    img.onload = async () => {
+      try {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  
+        texts.forEach((textObj) => {
+          ctx.font = `${textObj.bold ? "bold " : ""}${textObj.italic ? "italic " : ""}${textObj.fontSize}px ${textObj.fontFamily}`;
+          ctx.fillStyle = textObj.color;
+          ctx.fillText(textObj.text, textObj.left, textObj.top);
+        });
+  
+        stickers.forEach((sticker) => {
+          const stickerImg = new window.Image();
+          stickerImg.src = sticker.src;
+          ctx.drawImage(stickerImg, sticker.left, sticker.top, sticker.width, sticker.height);
+        });
+  
+        canvas.toBlob(async (blob) => {
+          if (!blob) {
+            alert("이미지 생성에 실패했습니다.");
+            return;
+          }
+  
+          // PNG 형식 확인
+          if (blob.type !== "image/png") {
+            alert("이미지 형식은 PNG만 지원됩니다.");
+            return;
+          }
+  
+          const userId = sessionStorage.getItem("userId") || "123";
+          const s3Url = await uploadImageToS3(blob, userId);
+          setEditedImage(s3Url); // 편집된 이미지 상태 업데이트
+          setActivePage("ImageSendPage");
+        }, "image/png");
+      } catch (error) {
+        console.error("이미지 처리 중 오류 발생:", error);
+        alert("이미지 처리에 실패했습니다.");
+      }
+    };
+  
+    img.onerror = () => {
+      alert("이미지를 로드할 수 없습니다. 다시 시도해주세요.");
+    };
+  };  
 
     const handleStyleChange = (style) => {
         if (selectedTextIndex !== null) {
@@ -492,10 +551,125 @@ const ImageEditingPage = ({
 
   useEffect(() => {
     if (generatedImage) {
-        setImageHistory((prevHistory) => [generatedImage, ...prevHistory]);
+      setSelectedImage(generatedImage);
+      setImageHistory((prevHistory) => [generatedImage, ...prevHistory]);
     }
-  }, [generatedImage, setImageHistory]);
+  }, [generatedImage]);
+  
 
+  useEffect(() => {
+    const fetchUserImages = async () => {
+      try {
+        const userId = sessionStorage.getItem('userId'); // 사용자 ID 가져오기
+        if (!userId) {
+          throw new Error('사용자 ID가 존재하지 않습니다.');
+        }
+        const userImages = await getUserImages(userId); // API 호출
+        const userImageUrls = userImages.map((image) => image.userImage).reverse(); // 이미지 URL만 추출
+        setImageHistory(userImageUrls); // 히스토리에 저장
+      } catch (error) {
+        console.error('Error fetching user images:', error);
+        alert('사용자 이미지를 가져오는 데 실패했습니다.');
+      } finally {
+        setLoading(false); // 로딩 완료
+      }
+    };
+
+    fetchUserImages();
+  }, [setImageHistory]);
+
+  const handleSelectHistoryImage = (image) => {
+    if (!image) {
+      alert('유효하지 않은 이미지입니다.');
+      return;
+    }
+    setSelectedImage(image); // 선택한 이미지를 업데이트
+  };
+
+  const handleStickerClick = (index, event) => {
+    event.stopPropagation();
+    setSelectedStickerIndex(index); // 클릭한 스티커로 선택 이동
+  };  
+
+  const handleDeselectSticker = () => {
+    setSelectedStickerIndex(null);
+  };
+
+  const handleStickerResizeStart = (index, direction, event) => {
+    event.stopPropagation();
+    setDraggingIndex({
+      index,
+      type: "resize",
+      direction,
+      startX: event.clientX,
+      startY: event.clientY,
+      initialWidth: stickers[index].width,
+      initialHeight: stickers[index].height,
+      initialTop: stickers[index].top,
+      initialLeft: stickers[index].left,
+    });
+  };
+  
+  const handleStickerResize = useCallback(
+    (event) => {
+      if (draggingIndex?.type === "resize") {
+        const { index, direction, startX, startY, initialWidth, initialHeight, initialTop, initialLeft } =
+          draggingIndex;
+        const deltaX = event.clientX - startX;
+        const deltaY = event.clientY - startY;
+
+        setStickers((prev) => {
+          const updatedStickers = [...prev];
+          const sticker = updatedStickers[index];
+
+          switch (direction) {
+            case "nw":
+              sticker.width = Math.max(20, initialWidth - deltaX);
+              sticker.height = Math.max(20, initialHeight - deltaY);
+              sticker.left = initialLeft + deltaX;
+              sticker.top = initialTop + deltaY;
+              break;
+            case "ne":
+              sticker.width = Math.max(20, initialWidth + deltaX);
+              sticker.height = Math.max(20, initialHeight - deltaY);
+              sticker.top = initialTop + deltaY;
+              break;
+            case "sw":
+              sticker.width = Math.max(20, initialWidth - deltaX);
+              sticker.height = Math.max(20, initialHeight + deltaY);
+              sticker.left = initialLeft + deltaX;
+              break;
+            case "se":
+              sticker.width = Math.max(20, initialWidth + deltaX);
+              sticker.height = Math.max(20, initialHeight + deltaY);
+              break;
+            default:
+              break;
+          }
+
+          return updatedStickers;
+        });
+      }
+    },
+    [draggingIndex]
+  );
+
+  const handleMouseUp = () => {
+    setDraggingIndex(null);
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousemove", handleStickerDrag);
+    document.addEventListener("mousemove", handleStickerResize);
+    document.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      document.removeEventListener("mousemove", handleStickerDrag);
+      document.removeEventListener("mousemove", handleStickerResize);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [handleStickerDrag, handleStickerResize]);
+  
   return (
     <PageContainer onMouseMove={handleDrag} onMouseUp={handleDragEnd}>
       {showTextEdit && (
@@ -610,12 +784,21 @@ const ImageEditingPage = ({
         </TextEditContainer>
         )}
 
-      <ImageContainer>
-        {generatedImage ? (
-          <Image src={generatedImage} alt="Generated" />
-        ) : (
-          <Placeholder>이미지가 없습니다.</Placeholder>
-        )}
+        <ImageContainer>
+                {selectedImage ? (
+                    <>
+                        <Image src={selectedImage} alt="Generated" />
+                        {generationTime ? (
+                            <p style={{ marginTop: '10px', fontSize: '14px', color: '#555' }}>
+                            이미지 생성 시간: {generationTime.toFixed(2)}초</p> 
+                            ) : (
+                            <p style={{ marginTop: '10px', fontSize: '14px', color: '#555' }}>
+                            이미지 생성 시간: ??초</p>     
+                        )}
+                    </>
+                ) : (
+                    <Placeholder>이미지가 없습니다.</Placeholder>
+                )}
 
           {texts.map((textObj, index) => (
             <TextOverlay
@@ -721,17 +904,17 @@ const ImageEditingPage = ({
           </ButtonGroup>
         </ImageContainer>
 
-      <HistoryPane>
-        <h3>히스토리</h3>
-        {imageHistory.map((image, index) => (
-          <HistoryItem key={index}>
-            <HistoryImage src={image} alt={`히스토리 ${index}`} />
-            <DeleteButton onClick={() => handleDeleteHistoryImage(index)}>
-              삭제
-            </DeleteButton>
-          </HistoryItem>
-        ))}
-      </HistoryPane>
+        <HistoryPane>
+          <h3>히스토리</h3>
+          {imageHistory.map((image, index) => (
+            <HistoryItem key={index}>
+              <HistoryImage src={image} alt={`히스토리 ${index}`} />
+              <ActionButton onClick={() => handleSelectHistoryImage(image)}>
+                선택
+              </ActionButton>
+            </HistoryItem>
+          ))}
+        </HistoryPane>
 
         <BottomButton primary onClick={handleCompleteClick}>
           제작 완료
