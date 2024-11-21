@@ -43,10 +43,11 @@ const Placeholder = styled.div`
 
 const TextOverlay = styled.div`
   position: absolute;
-  top: ${({ top }) => top}px;
-  left: ${({ left }) => left}px;
+  top: ${({ top }) => (top !== undefined ? top : 0)}px;
+  left: ${({ left }) => (left !== undefined ? left : 0)}px;
   cursor: move;
-  font-size: 20px;
+  font-size: ${({ fontSize }) => fontSize || 16}px;
+  font-family: ${({ fontFamily }) => fontFamily || 'Arial'};
   color: ${({ color }) => color || 'yellow'};
   user-select: none;
   font-weight: ${({ bold }) => (bold ? 'bold' : 'normal')};
@@ -228,17 +229,16 @@ const ImageEditingPage = ({
   imageHistory = [],
   setImageHistory,
   setActivePage,
-  setEditedImage,
 }) => {
   const [showTextEdit, setShowTextEdit] = useState(false);
   const [showStickerEdit, setShowStickerEdit] = useState(false);
   const [textInput, setTextInput] = useState('');
   const [texts, setTexts] = useState([]);
   const [selectedTextIndex, setSelectedTextIndex] = useState(null);
+  const [selectedStickerIndex, setSelectedStickerIndex] = useState(null);
   const [stickers, setStickers] = useState([]);
   const [draggingIndex, setDraggingIndex] = useState(null);
   const [dragStartPosition, setDragStartPosition] = useState({ x: 0, y: 0 });
-  const [currentImage, setCurrentImage] = useState(generatedImage);
 
   const colors = ['red', 'blue', 'green', 'black', 'yellow'];
 
@@ -246,33 +246,47 @@ const ImageEditingPage = ({
     if (textInput.trim()) {
       setTexts([
         ...texts,
-        { text: textInput, top: 50, left: 50, bold: false, italic: false, underline: false, color: 'yellow' },
+        {
+          text: textInput,
+          top: 50,
+          left: 50,
+          bold: false,
+          italic: false,
+          underline: false,
+          color: 'black',
+          fontSize,
+          fontFamily,
+        },
       ]);
       setTextInput('');
     }
   };
+  
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setStickers((prevStickers) => [
-          ...prevStickers,
-          { src: e.target.result, top: 50, left: 50 },
-        ]);
+        setStickers((prevStickers) => {
+          const newStickers = [
+            ...prevStickers,
+            { src: e.target.result, top: 50, left: 50, width: 60, height: 60 },
+          ];
+          setSelectedStickerIndex(newStickers.length - 1);
+          return newStickers;
+        });
       };
       reader.readAsDataURL(file);
     }
   };
 
   const handleCompleteClick = () => {
-    setEditedImage(currentImage); // 선택된 이미지를 편집된 이미지 상태로 저장
-    setActivePage('ImageSendPage'); // 발송 페이지로 이동
+    setActivePage('ImageSendPage', { editedImage: generatedImage }); // 편집된 이미지 전달
   };
 
-  const handleSelectHistoryImage = (image) => {
-    setCurrentImage(image);
+  const handleDeleteHistoryImage = (index) => {
+    setImageHistory((prevHistory) => prevHistory.filter((_, i) => i !== index));
   };
 
     const handleStyleChange = (style) => {
@@ -289,70 +303,198 @@ const ImageEditingPage = ({
     };
 
   const handleColorChange = (color) => {
+    const newColor = color.hex;
+    setCurrentColor(newColor);
     if (selectedTextIndex !== null) {
       setTexts((prevTexts) => {
         const updatedTexts = [...prevTexts];
         updatedTexts[selectedTextIndex] = {
           ...updatedTexts[selectedTextIndex],
-          color,
+          color: newColor,
         };
         return updatedTexts;
       });
     }
   };
 
-  const handleDragStart = (index, event) => {
-    setDraggingIndex(index);
-    setSelectedTextIndex(index); // 텍스트 선택
+  useEffect(() => {
+    console.log('Texts:', texts);
+    console.log('DraggingIndex:', draggingIndex);
+    console.log('DragStartPosition:', dragStartPosition);
+  }, [texts, draggingIndex, dragStartPosition]);  
+
+  const handleDragStart = (index, type, event) => {
+    setDraggingIndex({ index, type }); // 타입("text" 또는 "sticker")과 인덱스를 함께 저장
     setDragStartPosition({
       x: event.clientX,
       y: event.clientY,
     });
   };
-
+  
   const handleDrag = (event) => {
-    if (draggingIndex !== null) {
+    if (draggingIndex) {
       const deltaX = event.clientX - dragStartPosition.x;
       const deltaY = event.clientY - dragStartPosition.y;
-
-      setTexts((prevTexts) => {
-        const updatedTexts = [...prevTexts];
-        updatedTexts[draggingIndex] = {
-          ...updatedTexts[draggingIndex],
-          top: updatedTexts[draggingIndex].top + deltaY,
-          left: updatedTexts[draggingIndex].left + deltaX,
-        };
-        return updatedTexts;
-      });
-
+  
+      if (draggingIndex.type === "text") {
+        setTexts((prevTexts) => {
+          const updatedTexts = [...prevTexts];
+          updatedTexts[draggingIndex.index] = {
+            ...updatedTexts[draggingIndex.index],
+            top: (updatedTexts[draggingIndex.index]?.top || 0) + deltaY,
+            left: (updatedTexts[draggingIndex.index]?.left || 0) + deltaX,
+          };
+          return updatedTexts;
+        });
+      } else if (draggingIndex.type === "sticker") {
+        setStickers((prevStickers) => {
+          const updatedStickers = [...prevStickers];
+          updatedStickers[draggingIndex.index] = {
+            ...updatedStickers[draggingIndex.index],
+            top: (updatedStickers[draggingIndex.index]?.top || 0) + deltaY,
+            left: (updatedStickers[draggingIndex.index]?.left || 0) + deltaX,
+          };
+          return updatedStickers;
+        });
+      }
+  
       setDragStartPosition({
         x: event.clientX,
         y: event.clientY,
       });
     }
-  };
-
+  };  
+  
   const handleDragEnd = () => {
     setDraggingIndex(null);
   };
 
-  useEffect(() => {
-    const fetchUserImages = async () => {
-      const userId = sessionStorage.getItem('userId');
-      if (!userId) {
-        console.error('사용자 ID가 없습니다.');
-        return;
+  const handleDeleteText = () => {
+    if (selectedTextIndex !== null) {
+      setTexts((prevTexts) => prevTexts.filter((_, index) => index !== selectedTextIndex));
+      setSelectedTextIndex(null); // 선택 초기화
+    }
+  };
+
+  const handleFontSizeChange = (size) => {
+    if (selectedTextIndex !== null) {
+      setTexts((prevTexts) => {
+        const updatedTexts = [...prevTexts];
+        updatedTexts[selectedTextIndex] = {
+          ...updatedTexts[selectedTextIndex],
+          fontSize: size,
+        };
+        return updatedTexts;
+      });
+    }
+  };
+  
+  const handleFontFamilyChange = (family) => {
+    if (selectedTextIndex !== null) {
+      setTexts((prevTexts) => {
+        const updatedTexts = [...prevTexts];
+        updatedTexts[selectedTextIndex] = {
+          ...updatedTexts[selectedTextIndex],
+          fontFamily: family,
+        };
+        return updatedTexts;
+      });
+    }
+  };
+  
+  let sampleStickers = [];
+  try {
+    const importAll = (r) => r.keys().map(r);
+    sampleStickers = importAll(require.context('../assets/stickers', false, /\.(png|jpe?g|svg)$/));
+  } catch (error) {
+    console.error('Error loading stickers:', error);
+    sampleStickers = []
+  }
+
+  const handleAddSampleSticker = (src) => {
+    setStickers((prev) => {
+      const newStickers = [
+        ...prev,
+        { src, top: 50, left: 50, width: 60, height: 60 },
+      ];
+      setSelectedStickerIndex(newStickers.length - 1);
+      return newStickers;
+    });
+  };
+
+  const handleStickerDragStart = (index, event) => {
+    event.stopPropagation();
+    setDraggingIndex({
+      index,
+      type: "drag",
+      startX: event.clientX,
+      startY: event.clientY,
+      initialTop: stickers[index].top,
+      initialLeft: stickers[index].left,
+    });
+  };
+
+  const handleStickerDrag = useCallback(
+    (event) => {
+      if (draggingIndex?.type === "drag") {
+        const { index, startX, startY, initialTop, initialLeft } = draggingIndex;
+        const deltaX = event.clientX - startX;
+        const deltaY = event.clientY - startY;
+
+        setStickers((prev) => {
+          const updatedStickers = [...prev];
+          updatedStickers[index].top = initialTop + deltaY;
+          updatedStickers[index].left = initialLeft + deltaX;
+          return updatedStickers;
+        });
       }
-      try {
-        const images = await getUserImages(userId);
-        setImageHistory(images.map((image) => image.userImage).reverse());
-      } catch (error) {
-        console.error('Error fetching user images:', error);
+    },
+    [draggingIndex]
+  );
+  
+    const handleStickerDragEnd = useCallback(() => {
+      setDraggingIndex(null);
+  }, []);
+  
+  useEffect(() => {
+    const handleMouseMove = (event) => {
+      if (draggingIndex?.type === "sticker") {
+        handleStickerDrag(event);
       }
     };
   
-    fetchUserImages();
-  }, []);
+    const handleMouseUp = () => {
+      handleStickerDragEnd();
+    };
+  
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [handleStickerDrag, handleStickerDragEnd, draggingIndex]);
+  
+  const handleDeleteSticker = (index) => {
+    setStickers((prevStickers) => {
+      const updatedStickers = prevStickers.filter((_, i) => i !== index);
+      // 스티커 삭제 후 새로운 선택 설정
+      if (updatedStickers.length > 0) {
+        setSelectedStickerIndex(updatedStickers.length - 1); // 마지막 스티커 선택
+      } else {
+        setSelectedStickerIndex(null); // 스티커가 없으면 선택 해제
+      }
+      return updatedStickers;
+    });
+  };
+  
+
+  useEffect(() => {
+    if (generatedImage) {
+        setImageHistory((prevHistory) => [generatedImage, ...prevHistory]);
+    }
+  }, [generatedImage, setImageHistory]);
 
   return (
     <PageContainer onMouseMove={handleDrag} onMouseUp={handleDragEnd}>
@@ -366,52 +508,117 @@ const ImageEditingPage = ({
             placeholder="텍스트를 입력하세요"
           />
           <ActionButton onClick={handleAddText}>텍스트 추가</ActionButton>
-          <StyleButtonsContainer>
-            <StyleButton active={selectedTextIndex !== null && texts[selectedTextIndex]?.bold} onClick={() => handleStyleChange('bold')}>
-              굵게
-            </StyleButton>
-            <StyleButton active={selectedTextIndex !== null && texts[selectedTextIndex]?.italic} onClick={() => handleStyleChange('italic')}>
-              기울임
-            </StyleButton>
-            <StyleButton active={selectedTextIndex !== null && texts[selectedTextIndex]?.underline} onClick={() => handleStyleChange('underline')}>
-              밑줄
-            </StyleButton>
-          </StyleButtonsContainer>
-          <ColorPickerContainer>
-            {colors.map((color, index) => (
-              <ColorButton
-                key={index}
-                color={color}
-                active={selectedTextIndex !== null && texts[selectedTextIndex]?.color === color}
-                onClick={() => handleColorChange(color)}
-              />
-            ))}
-          </ColorPickerContainer>
+
+          {selectedTextIndex !== null && (
+            <>
+              <StyleButtonsContainer>
+                <StyleButton active={texts[selectedTextIndex]?.bold} onClick={() => handleStyleChange('bold')}>
+                  굵게
+                </StyleButton>
+                <StyleButton active={texts[selectedTextIndex]?.italic} onClick={() => handleStyleChange('italic')}>
+                  기울임
+                </StyleButton>
+                <StyleButton active={texts[selectedTextIndex]?.underline} onClick={() => handleStyleChange('underline')}>
+                  밑줄
+                </StyleButton>
+              </StyleButtonsContainer>
+
+              <div style={{ marginTop: '10px' }}>
+                <label>글꼴 :</label>
+                <select
+                  style={{ marginLeft: '20px' }}
+                  value={texts[selectedTextIndex]?.fontFamily || fontFamily}
+                  onChange={(e) => handleFontFamilyChange(e.target.value)}
+                >
+                  {fonts.map((font, index) => (
+                    <option key={index} value={font}>
+                      {font}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ marginTop: '10px' }}>
+                <label>텍스트 크기 :</label>
+                <input
+                  type="number"
+                  value={texts[selectedTextIndex]?.fontSize || fontSize}
+                  min="10"
+                  max="50"
+                  onChange={(e) => handleFontSizeChange(parseInt(e.target.value, 10))}
+                  style={{ marginLeft: '20px', width: '50px' }}
+                />
+              </div>
+
+              <div style={{ marginTop: '10px' }}>
+                <label>텍스트 색상 :</label>
+                <button
+                  style={{
+                    marginLeft: '10px',
+                    padding: '5px 10px',
+                    backgroundColor: texts[selectedTextIndex]?.color || '#000000',
+                    border: '1px solid #ccc',
+                    cursor: 'pointer',
+                    color: '#fff',
+                  }}
+                  onClick={() => setColorPickerVisible(!colorPickerVisible)}
+                >
+                  색상 선택
+                </button>
+              </div>
+
+              {colorPickerVisible && (
+                <div style={{ position: 'absolute', zIndex: 2 }}>
+                  <SketchPicker
+                    color={texts[selectedTextIndex]?.color || currentColor}
+                    onChangeComplete={handleColorChange}
+                  />
+                </div>
+              )}
+
+              <ActionButton
+                onClick={handleDeleteText}
+                style={{ marginTop: '20px', backgroundColor: 'red', color: 'white' }}
+              >
+                텍스트 삭제
+              </ActionButton>
+            </>
+          )}
         </TextEditContainer>
       )}
 
       {showStickerEdit && (
         <TextEditContainer>
-        <h4>스티커 추가</h4>
-        <p>스티커 업로드</p>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleFileUpload}
-          style={{ marginTop: '10px' }}
-        />
-      </TextEditContainer>
-      )}
+          <h4>스티커 추가</h4>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileUpload}
+            style={{ marginTop: '10px' }}
+          />
+          <p>샘플 스티커 선택</p>
+          <StickerSelectionContainer>
+            {sampleStickers.map((sticker, index) => (
+              <StickerPreview
+                key={index}
+                src={sticker}
+                alt={`샘플 스티커 ${index}`}
+                onClick={() => handleAddSampleSticker(sticker)}
+              />
+            ))}
+          </StickerSelectionContainer>
+        </TextEditContainer>
+        )}
 
       <ImageContainer>
-        {currentImage ? (
-          <Image src={currentImage} alt="Selected" />
+        {generatedImage ? (
+          <Image src={generatedImage} alt="Generated" />
         ) : (
           <Placeholder>이미지가 없습니다.</Placeholder>
         )}
 
-        {texts.map((textObj, index) => (
-          <TextOverlay
+          {texts.map((textObj, index) => (
+            <TextOverlay
             key={index}
             top={textObj.top}
             left={textObj.left}
@@ -419,54 +626,117 @@ const ImageEditingPage = ({
             italic={textObj.italic}
             underline={textObj.underline}
             color={textObj.color}
-            onMouseDown={(event) => handleDragStart(index, event)}
-          >
-            {textObj.text}
-          </TextOverlay>
-        ))}
+            fontSize={textObj.fontSize}
+            fontFamily={textObj.fontFamily}
+            onMouseDown={(event) => handleDragStart(index, "text", event)}
+            onClick={() => setSelectedTextIndex(index)} // 텍스트 선택
+            style={{
+              border: selectedTextIndex === index ? '2px dashed blue' : 'none', // 선택된 텍스트 강조
+            }}
+            >
+              {textObj.text}
+            </TextOverlay>
+          ))}
 
-        {stickers.map((sticker, index) => (
-          <StickerOverlay
+          {stickers.map((sticker, index) => (
+            <StickerOverlayContainer
             key={index}
-            src={sticker.src}
             top={sticker.top}
             left={sticker.left}
-            onMouseDown={(event) => handleDragStart(index, event)}
-          />
-        ))}
+            width={sticker.width}
+            height={sticker.height}
+            selected={selectedStickerIndex === index}
+            onMouseDown={(event) => handleStickerClick(index, event)} // 이벤트 전달
+          >
+              <StickerOverlay
+                src={sticker.src}
+                onMouseDown={(event) => handleStickerDragStart(index, event)}
+              />
+              {selectedStickerIndex === index && (
+                <>
+                  <ResizeHandle
+                    direction="nw"
+                    position="top: 0; left: 0;"
+                    onMouseDown={(event) =>
+                      handleStickerResizeStart(index, "nw", event)
+                    }
+                  />
+                  <ResizeHandle
+                    direction="ne"
+                    position="top: 0; left: 100%;"
+                    onMouseDown={(event) =>
+                      handleStickerResizeStart(index, "ne", event)
+                    }
+                  />
+                  <ResizeHandle
+                    direction="sw"
+                    position="top: 100%; left: 0;"
+                    onMouseDown={(event) =>
+                      handleStickerResizeStart(index, "sw", event)
+                    }
+                  />
+                  <ResizeHandle
+                    direction="se"
+                    position="top: 100%; left: 100%;"
+                    onMouseDown={(event) =>
+                      handleStickerResizeStart(index, "se", event)
+                    }
+                  />
+                  <button
+                    style={{
+                      position: "absolute",
+                      top: "-20px",
+                      right: "-20px",
+                      backgroundColor: "red",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "50%",
+                      width: "25px",
+                      height: "25px",
+                      cursor: "pointer",
+                      fontSize: "16px",
+                    }}
+                    onClick={() => handleDeleteSticker(index)}
+                  >
+                    X
+        </button>
+                </>
+              )}
+            </StickerOverlayContainer>
+          ))}
 
-        <ButtonGroup>
-          <ActionButton onClick={() => {
-            setShowTextEdit(!showTextEdit);
-            setShowStickerEdit(false); // 스티커 창 닫기
-          }}>
-            텍스트 추가
-          </ActionButton>
-          <ActionButton onClick={() => {
-            setShowStickerEdit(!showStickerEdit);
-            setShowTextEdit(false); // 텍스트 창 닫기
-          }}>
-            스티커 추가
-          </ActionButton>
-        </ButtonGroup>
-      </ImageContainer>
+          <ButtonGroup>
+            <ActionButton onClick={() => {
+              setShowTextEdit(!showTextEdit);
+              setShowStickerEdit(false); // 스티커 창 닫기
+            }}>
+              텍스트 추가
+            </ActionButton>
+            <ActionButton onClick={() => {
+              setShowStickerEdit(!showStickerEdit);
+              setShowTextEdit(false); // 텍스트 창 닫기
+            }}>
+              스티커 추가
+            </ActionButton>
+          </ButtonGroup>
+        </ImageContainer>
 
       <HistoryPane>
         <h3>히스토리</h3>
         {imageHistory.map((image, index) => (
           <HistoryItem key={index}>
             <HistoryImage src={image} alt={`히스토리 ${index}`} />
-            <SelectButton onClick={() => handleSelectHistoryImage(image)}>
-              선택
-            </SelectButton>
+            <DeleteButton onClick={() => handleDeleteHistoryImage(index)}>
+              삭제
+            </DeleteButton>
           </HistoryItem>
         ))}
       </HistoryPane>
 
-      <BottomButton primary onClick={handleCompleteClick}>
-        제작 완료
-      </BottomButton>
-    </PageContainer>
+        <BottomButton primary onClick={handleCompleteClick}>
+          제작 완료
+        </BottomButton>
+      </PageContainer>
   );
 };
 

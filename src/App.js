@@ -67,8 +67,6 @@ const App = () => {
             imageHistory={imageHistory}
             setImageHistory={setImageHistory}
             setActivePage={setActivePage}
-            setEditedImage={setEditedImage}
-            generationTime={generationTime}
           />
         );
       case 'SMSPage': // SMSPage 전달

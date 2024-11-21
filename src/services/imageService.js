@@ -46,21 +46,3 @@ export const generateImage = async ({ prompt, initImage }) => {
     throw new Error('이미지 생성 실패');
   }
 };
-
-
-/**
- * 사용자 생성 이미지 가져오기
- * @param {string} userId - 사용자 ID
- * @returns {Promise<Object[]>} - 이미지 목록 (userImage, sampleImage, prompt, createdAt 포함)
- */
-export const getUserImages = async (userId) => {
-  try {
-    const response = await axios.get(`${process.env.REACT_APP_SERVER_IP}/user/get-images`, {
-      params: { USER_ID: userId }, // 요청 파라미터 설정
-    });
-    return response.data; // 성공 시 데이터 반환
-  } catch (error) {
-    console.error('Error fetching user images:', error);
-    throw error; // 에러 발생 시 호출한 쪽에서 처리하도록 에러 전달
-  }
-};
