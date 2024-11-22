@@ -45,7 +45,7 @@ export const sendSMS = async (recipient, message, changeWords = {}) => {
 export const sendMMS = async (recipient, message, imgUrl, changeWords = {}) => {
   try {
     const requestBody = {
-      content: message,          // 메시지 내용
+      content: message || '이미지',          // 메시지 내용
       duplicateFlag: 'N',        // 중복 제거
       targetCount: 1,            // 수신자 수
       targets: [

@@ -39,7 +39,7 @@ export const generateImage = async ({ prompt, initImage, negativePrompt }) => {
     const response = await axios.post(apiUrl, payload);
 
     console.log('이미지 생성 성공:', response.data);
-    return response.data.uploadedImageUrl;
+    return response.data;
   } catch (error) {
     console.error('이미지 생성 실패:', error);
     throw new Error('이미지 생성 실패');

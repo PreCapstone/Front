@@ -109,9 +109,10 @@ const RequirementsPage = ({
                 initImage: selectedSample,
                 negativePrompt: useNegativePrompt, // 상태 전달
             });
+            console.log(result.time);
 
-            setGeneratedImage(result);
-            setImageHistory((prevHistory) => [result, ...prevHistory]);
+            setGeneratedImage(result.uploadedImageUrl);
+            setImageHistory((prevHistory) => [result.uploadedImageUrl, ...prevHistory]);
             setGenerationTime(result.time);
             setActivePage('ImageEditingPage');
         } catch (error) {

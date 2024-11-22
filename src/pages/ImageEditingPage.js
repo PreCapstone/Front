@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import styled from 'styled-components';
 import { getUserImages } from '../services/imageService';
 import { SketchPicker } from 'react-color';
@@ -95,26 +95,6 @@ const StyleButton = styled.button`
     }
 `;
 
-const ColorPickerContainer = styled.div`
-    display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-`;
-
-const ColorButton = styled.button`
-    width: 30px;
-    height: 30px;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    background-color: ${({ color }) => color};
-    outline: ${({ active }) => (active ? '2px solid black' : 'none')};
-
-    &:hover {
-        outline: 2px solid #555;
-    }
-`;
-
 const HistoryPane = styled.div`
     flex: 1;
     display: flex;
@@ -140,19 +120,6 @@ const HistoryImage = styled.img`
   height: auto;
   object-fit: contain;
   margin-bottom: 10px;
-`;
-
-const SelectButton = styled.button`
-  padding: 5px 10px;
-  background-color: green;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-
-  &:hover {
-    background-color: darkgreen;
-  }
 `;
 
 const ButtonGroup = styled.div`
@@ -241,8 +208,8 @@ const ImageEditingPage = ({
   const [stickers, setStickers] = useState([]);
   const [draggingIndex, setDraggingIndex] = useState(null);
   const [dragStartPosition, setDragStartPosition] = useState({ x: 0, y: 0 });
-  const [fontSize, setFontSize] = useState(16); // 글씨 크기 상태
-  const [fontFamily, setFontFamily] = useState('Arial'); // 글꼴 상태
+  const [fontSize] = useState(30);
+  const [fontFamily] = useState('Malgun Gothic');
   const [loading, setLoading] = useState(true); // 로딩 상태 관리
   const [selectedImage, setSelectedImage] = useState(generatedImage);
   const [colorPickerVisible, setColorPickerVisible] = useState(false);
@@ -376,12 +343,6 @@ const ImageEditingPage = ({
     }
   };
 
-  useEffect(() => {
-    console.log('Texts:', texts);
-    console.log('DraggingIndex:', draggingIndex);
-    console.log('DragStartPosition:', dragStartPosition);
-  }, [texts, draggingIndex, dragStartPosition]);  
-
   const handleDragStart = (index, type, event) => {
     setDraggingIndex({ index, type }); // 타입("text" 또는 "sticker")과 인덱스를 함께 저장
     setDragStartPosition({
@@ -389,40 +350,60 @@ const ImageEditingPage = ({
       y: event.clientY,
     });
   };
+
+  const imageContainerRef = useRef(null);
   
   const handleDrag = (event) => {
     if (draggingIndex) {
       const deltaX = event.clientX - dragStartPosition.x;
       const deltaY = event.clientY - dragStartPosition.y;
-  
-      if (draggingIndex.type === "text") {
-        setTexts((prevTexts) => {
-          const updatedTexts = [...prevTexts];
-          updatedTexts[draggingIndex.index] = {
-            ...updatedTexts[draggingIndex.index],
-            top: (updatedTexts[draggingIndex.index]?.top || 0) + deltaY,
-            left: (updatedTexts[draggingIndex.index]?.left || 0) + deltaX,
-          };
-          return updatedTexts;
-        });
-      } else if (draggingIndex.type === "sticker") {
-        setStickers((prevStickers) => {
-          const updatedStickers = [...prevStickers];
-          updatedStickers[draggingIndex.index] = {
-            ...updatedStickers[draggingIndex.index],
-            top: (updatedStickers[draggingIndex.index]?.top || 0) + deltaY,
-            left: (updatedStickers[draggingIndex.index]?.left || 0) + deltaX,
-          };
-          return updatedStickers;
+
+      if (imageContainerRef.current) {
+        const containerRect = imageContainerRef.current.getBoundingClientRect();
+
+        if (draggingIndex.type === "text") {
+          setTexts((prevTexts) => {
+            const updatedTexts = [...prevTexts];
+            const text = updatedTexts[draggingIndex.index];
+
+            const newLeft = Math.min(
+              Math.max((text.left || 0) + deltaX, 0),
+              containerRect.width - 10
+            );
+            const newTop = Math.min(
+              Math.max((text.top || 0) + deltaY, 0),
+              containerRect.height - 10
+            );
+
+            updatedTexts[draggingIndex.index] = { ...text, left: newLeft, top: newTop };
+            return updatedTexts;
+          });
+        } else if (draggingIndex.type === "sticker") {
+          setStickers((prevStickers) => {
+            const updatedStickers = [...prevStickers];
+            const sticker = updatedStickers[draggingIndex.index];
+
+            const newLeft = Math.min(
+              Math.max((sticker.left || 0) + deltaX, 0),
+              containerRect.width - sticker.width
+            );
+            const newTop = Math.min(
+              Math.max((sticker.top || 0) + deltaY, 0),
+              containerRect.height - sticker.height
+            );
+
+            updatedStickers[draggingIndex.index] = { ...sticker, left: newLeft, top: newTop };
+            return updatedStickers;
+          });
+        }
+
+        setDragStartPosition({
+          x: event.clientX,
+          y: event.clientY,
         });
       }
-  
-      setDragStartPosition({
-        x: event.clientX,
-        y: event.clientY,
-      });
     }
-  };  
+  };
   
   const handleDragEnd = () => {
     setDraggingIndex(null);
@@ -470,16 +451,13 @@ const ImageEditingPage = ({
     sampleStickers = []
   }
 
-  const handleAddSampleSticker = (src) => {
-    setStickers((prev) => {
-      const newStickers = [
-        ...prev,
-        { src, top: 50, left: 50, width: 60, height: 60 },
-      ];
-      setSelectedStickerIndex(newStickers.length - 1);
-      return newStickers;
-    });
-  };
+  const handleAddSampleSticker = useCallback((src) => {
+    setStickers((prev) => [
+      ...prev,
+      { src, top: 50, left: 50, width: 60, height: 60 },
+    ]);
+    setSelectedStickerIndex(stickers.length); // 기존 상태 활용
+  }, [stickers]);
 
   const handleStickerDragStart = (index, event) => {
     event.stopPropagation();
@@ -492,48 +470,24 @@ const ImageEditingPage = ({
       initialLeft: stickers[index].left,
     });
   };
+  
+  
 
-  const handleStickerDrag = useCallback(
-    (event) => {
-      if (draggingIndex?.type === "drag") {
-        const { index, startX, startY, initialTop, initialLeft } = draggingIndex;
-        const deltaX = event.clientX - startX;
-        const deltaY = event.clientY - startY;
-
-        setStickers((prev) => {
-          const updatedStickers = [...prev];
-          updatedStickers[index].top = initialTop + deltaY;
-          updatedStickers[index].left = initialLeft + deltaX;
-          return updatedStickers;
-        });
-      }
-    },
-    [draggingIndex]
-  );
+  const handleStickerDrag = useCallback((event) => {
+    if (draggingIndex?.type === "drag") {
+      const { index, startX, startY, initialTop, initialLeft } = draggingIndex;
+      const deltaX = event.clientX - startX;
+      const deltaY = event.clientY - startY;
   
-    const handleStickerDragEnd = useCallback(() => {
-      setDraggingIndex(null);
-  }, []);
-  
-  useEffect(() => {
-    const handleMouseMove = (event) => {
-      if (draggingIndex?.type === "sticker") {
-        handleStickerDrag(event);
-      }
-    };
-  
-    const handleMouseUp = () => {
-      handleStickerDragEnd();
-    };
-  
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
-  
-    return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, [handleStickerDrag, handleStickerDragEnd, draggingIndex]);
+      setStickers((prevStickers) => {
+        const updatedStickers = [...prevStickers];
+        updatedStickers[index].top = initialTop + deltaY;
+        updatedStickers[index].left = initialLeft + deltaX;
+        return updatedStickers;
+      });
+    }
+  }, [draggingIndex]);
+      
   
   const handleDeleteSticker = (index) => {
     setStickers((prevStickers) => {
@@ -565,6 +519,7 @@ const ImageEditingPage = ({
           throw new Error('사용자 ID가 존재하지 않습니다.');
         }
         const userImages = await getUserImages(userId); // API 호출
+        console.log('응답 데이터:', userImages);
         const userImageUrls = userImages.map((image) => image.userImage).reverse(); // 이미지 URL만 추출
         setImageHistory(userImageUrls); // 히스토리에 저장
       } catch (error) {
@@ -591,12 +546,9 @@ const ImageEditingPage = ({
     setSelectedStickerIndex(index); // 클릭한 스티커로 선택 이동
   };  
 
-  const handleDeselectSticker = () => {
-    setSelectedStickerIndex(null);
-  };
-
   const handleStickerResizeStart = (index, direction, event) => {
     event.stopPropagation();
+    console.log('Resizing started:', { index, direction }); // 디버깅 추가
     setDraggingIndex({
       index,
       type: "resize",
@@ -608,55 +560,113 @@ const ImageEditingPage = ({
       initialTop: stickers[index].top,
       initialLeft: stickers[index].left,
     });
-  };
+  };  
   
-  const handleStickerResize = useCallback(
-    (event) => {
-      if (draggingIndex?.type === "resize") {
-        const { index, direction, startX, startY, initialWidth, initialHeight, initialTop, initialLeft } =
-          draggingIndex;
-        const deltaX = event.clientX - startX;
-        const deltaY = event.clientY - startY;
+  const handleStickerResize = useCallback((event) => {
+    if (draggingIndex?.type === "resize") {
+      const {
+        index,
+        direction,
+        startX,
+        startY,
+        initialWidth,
+        initialHeight,
+        initialTop,
+        initialLeft,
+      } = draggingIndex;
 
-        setStickers((prev) => {
-          const updatedStickers = [...prev];
+      const deltaX = event.clientX - startX;
+      const deltaY = event.clientY - startY;
+
+      if (imageContainerRef.current) {
+        const containerRect = imageContainerRef.current.getBoundingClientRect();
+
+        setStickers((prevStickers) => {
+          const updatedStickers = [...prevStickers];
           const sticker = updatedStickers[index];
+
+          let newWidth = sticker.width;
+          let newHeight = sticker.height;
+          let newTop = sticker.top;
+          let newLeft = sticker.left;
 
           switch (direction) {
             case "nw":
-              sticker.width = Math.max(20, initialWidth - deltaX);
-              sticker.height = Math.max(20, initialHeight - deltaY);
-              sticker.left = initialLeft + deltaX;
-              sticker.top = initialTop + deltaY;
+              newWidth = Math.max(20, initialWidth - deltaX);
+              newHeight = Math.max(20, initialHeight - deltaY);
+              newLeft = Math.min(
+                Math.max(initialLeft + deltaX, 0),
+                containerRect.width - newWidth
+              );
+              newTop = Math.min(
+                Math.max(initialTop + deltaY, 0),
+                containerRect.height - newHeight
+              );
               break;
             case "ne":
-              sticker.width = Math.max(20, initialWidth + deltaX);
-              sticker.height = Math.max(20, initialHeight - deltaY);
-              sticker.top = initialTop + deltaY;
+              newWidth = Math.max(20, initialWidth + deltaX);
+              newHeight = Math.max(20, initialHeight - deltaY);
+              newTop = Math.min(
+                Math.max(initialTop + deltaY, 0),
+                containerRect.height - newHeight
+              );
               break;
             case "sw":
-              sticker.width = Math.max(20, initialWidth - deltaX);
-              sticker.height = Math.max(20, initialHeight + deltaY);
-              sticker.left = initialLeft + deltaX;
+              newWidth = Math.max(20, initialWidth - deltaX);
+              newHeight = Math.max(20, initialHeight + deltaY);
+              newLeft = Math.min(
+                Math.max(initialLeft + deltaX, 0),
+                containerRect.width - newWidth
+              );
               break;
             case "se":
-              sticker.width = Math.max(20, initialWidth + deltaX);
-              sticker.height = Math.max(20, initialHeight + deltaY);
+              newWidth = Math.max(20, initialWidth + deltaX);
+              newHeight = Math.max(20, initialHeight + deltaY);
               break;
             default:
               break;
           }
 
+          updatedStickers[index] = {
+            ...sticker,
+            width: Math.min(newWidth, containerRect.width),
+            height: Math.min(newHeight, containerRect.height),
+            top: newTop,
+            left: newLeft,
+          };
           return updatedStickers;
         });
       }
-    },
-    [draggingIndex]
-  );
+    }
+  }, [draggingIndex]);
 
-  const handleMouseUp = () => {
+
+
+  const handleMouseUp = useCallback(() => {
+    if (draggingIndex?.type === "resize") {
+      setStickers((prevStickers) => {
+          const updatedStickers = [...prevStickers];
+          const stickerElement = document.getElementById(`sticker-${draggingIndex.index}`);
+          if (stickerElement) {
+              const rect = stickerElement.getBoundingClientRect();
+              updatedStickers[draggingIndex.index] = {
+                  ...updatedStickers[draggingIndex.index],
+                  width: rect.width,
+                  height: rect.height,
+                  top: rect.top,
+                  left: rect.left,
+              };
+          }
+          return updatedStickers;
+      });
+    }
     setDraggingIndex(null);
-  };
+  }, []);
+      
+  useEffect(() => {
+    console.log('ImageEditingPage로 전달된 generationTime:', generationTime);
+  }, [generationTime]);
+
 
   useEffect(() => {
     document.addEventListener("mousemove", handleStickerDrag);
@@ -669,6 +679,31 @@ const ImageEditingPage = ({
       document.removeEventListener("mouseup", handleMouseUp);
     };
   }, [handleStickerDrag, handleStickerResize]);
+  
+  useEffect(() => {
+    const handleMouseMove = (event) => {
+        if (draggingIndex?.type === "resize") {
+            handleStickerResize(event);
+        } else if (draggingIndex?.type === "drag") {
+            handleStickerDrag(event);
+        }
+    };
+
+    const handleMouseUp = () => {
+        if (draggingIndex) {
+            setDraggingIndex(null); // 드래그 또는 리사이즈 종료
+        }
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [draggingIndex, handleStickerResize, handleStickerDrag]);
+
   
   return (
     <PageContainer onMouseMove={handleDrag} onMouseUp={handleDragEnd}>
@@ -784,13 +819,13 @@ const ImageEditingPage = ({
         </TextEditContainer>
         )}
 
-        <ImageContainer>
+        <ImageContainer ref={imageContainerRef}>
                 {selectedImage ? (
                     <>
                         <Image src={selectedImage} alt="Generated" />
                         {generationTime ? (
                             <p style={{ marginTop: '10px', fontSize: '14px', color: '#555' }}>
-                            이미지 생성 시간: {generationTime.toFixed(2)}초</p> 
+                            이미지 생성 시간: {generationTime}초</p> 
                             ) : (
                             <p style={{ marginTop: '10px', fontSize: '14px', color: '#555' }}>
                             이미지 생성 시간: ??초</p>     
@@ -823,17 +858,18 @@ const ImageEditingPage = ({
 
           {stickers.map((sticker, index) => (
             <StickerOverlayContainer
+            id={`sticker-${index}`} // 고유 ID 부여
             key={index}
             top={sticker.top}
             left={sticker.left}
             width={sticker.width}
             height={sticker.height}
             selected={selectedStickerIndex === index}
-            onMouseDown={(event) => handleStickerClick(index, event)} // 이벤트 전달
-          >
+            onMouseDown={(event) => handleStickerClick(index, event)}
+            >
               <StickerOverlay
-                src={sticker.src}
-                onMouseDown={(event) => handleStickerDragStart(index, event)}
+                  src={sticker.src}
+                  onMouseDown={(event) => handleStickerDragStart(index, event)}
               />
               {selectedStickerIndex === index && (
                 <>
@@ -882,7 +918,7 @@ const ImageEditingPage = ({
                     onClick={() => handleDeleteSticker(index)}
                   >
                     X
-        </button>
+                  </button>
                 </>
               )}
             </StickerOverlayContainer>
