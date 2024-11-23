@@ -100,28 +100,28 @@ export const Pane = styled.div`
     ${Title}:first-child {
       opacity: 1;
       animation: 
-        ${typing} 1.5s steps(11) forwards,
-        ${cursorBlink} 0.7s step-end 3;
+        ${typing} 0.7s steps(11) forwards,
+        ${cursorBlink} 0.3s step-end 3;
     }
 
     ${Title}:last-child {
       opacity: 1;
       animation: 
-        ${typing} 1.5s steps(15) forwards,
-        ${cursorBlink} 0.7s step-end 3;
-      animation-delay: 1.5s;
+        ${typing} 0.7s steps(15) forwards,
+        ${cursorBlink} 0.3s step-end 3;
+      animation-delay: 0.7s;
     }
 
     ${ContentWrapper} {
       opacity: 1;
       transform: translateY(0);
-      transition-delay: 3s;
+      transition-delay: 1.4s;
     }
 
     ${HintText} {
       opacity: 1;
       transform: translateY(0);
-      transition-delay: 4s;
+      transition-delay: 2.4s;
     }
   }
 `;
