@@ -271,21 +271,53 @@ const ImageEditingPage = ({
   
     img.onload = async () => {
       try {
-        canvas.width = img.width;
-        canvas.height = img.height;
+        const imageContainerRect = imageContainerRef.current.getBoundingClientRect();
+        const renderedWidth = imageContainerRect.width;
+        const renderedHeight = imageContainerRect.height;
+      
+        const aspectRatio = img.width / img.height;
+
+        // 캔버스 크기 설정
+        if (aspectRatio >= 1) {
+          canvas.width = renderedWidth;
+          canvas.height = renderedWidth / aspectRatio;
+        } else {
+          canvas.height = renderedHeight;
+          canvas.width = renderedHeight * aspectRatio;
+        }
+    
+        // 이미지 그리기
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
   
         texts.forEach((textObj) => {
+          const relativeLeft = textObj.left / img.width;
+          const relativeTop = textObj.top / img.height;
           ctx.font = `${textObj.bold ? "bold " : ""}${textObj.italic ? "italic " : ""}${textObj.fontSize}px ${textObj.fontFamily}`;
           ctx.fillStyle = textObj.color;
-          ctx.fillText(textObj.text, textObj.left, textObj.top);
+          ctx.fillText(textObj.text, relativeLeft * canvas.width, relativeTop * canvas.height);
         });
   
-        stickers.forEach((sticker) => {
-          const stickerImg = new window.Image();
-          stickerImg.src = sticker.src;
-          ctx.drawImage(stickerImg, sticker.left, sticker.top, sticker.width, sticker.height);
-        });
+        await Promise.all(
+          stickers.map(
+            (sticker) =>
+              new Promise((resolve) => {
+                const stickerImg = new window.Image();
+                stickerImg.src = sticker.src;
+                stickerImg.onload = () => {
+                  const relativeLeft = sticker.left / renderedWidth;
+                  const relativeTop = sticker.top / renderedHeight;
+                  ctx.drawImage(
+                    stickerImg,
+                    relativeLeft * canvas.width,
+                    relativeTop * canvas.height,
+                    (sticker.width / renderedWidth) * canvas.width, // 스티커 너비 조정
+                    (sticker.height / renderedHeight) * canvas.height // 스티커 높이 조정
+                  );
+                  resolve(); // 스티커 렌더링 완료
+                };
+              })
+          )
+        );
   
         canvas.toBlob(async (blob) => {
           if (!blob) {
@@ -303,6 +335,8 @@ const ImageEditingPage = ({
           const s3Url = await uploadImageToS3(blob, userId);
           setEditedImage(s3Url); // 편집된 이미지 상태 업데이트
           setActivePage("ImageSendPage");
+          console.log("Image Ratio:", img.width / img.height);
+          console.log("Canvas Ratio:", canvas.width / canvas.height);
         }, "image/png");
       } catch (error) {
         console.error("이미지 처리 중 오류 발생:", error);
@@ -523,7 +557,7 @@ const ImageEditingPage = ({
         const userImageUrls = userImages.map((image) => image.userImage).reverse(); // 이미지 URL만 추출
         setImageHistory(userImageUrls); // 히스토리에 저장
       } catch (error) {
-        console.error('Error fetching user images:', error);
+        console.error('Error fetching user images in ImageEdtingPage:', error);
         alert('사용자 이미지를 가져오는 데 실패했습니다.');
       } finally {
         setLoading(false); // 로딩 완료
@@ -542,9 +576,15 @@ const ImageEditingPage = ({
   };
 
   const handleStickerClick = (index, event) => {
-    event.stopPropagation();
-    setSelectedStickerIndex(index); // 클릭한 스티커로 선택 이동
-  };  
+    event.stopPropagation(); // 부모 이벤트로의 전파 중단
+    if (selectedStickerIndex === index) {
+      // 이미 선택된 상태면 선택 해제
+      setSelectedStickerIndex(null);
+    } else {
+      // 새 스티커 선택
+      setSelectedStickerIndex(index);
+    }
+  };
 
   const handleStickerResizeStart = (index, direction, event) => {
     event.stopPropagation();
@@ -869,7 +909,11 @@ const ImageEditingPage = ({
             >
               <StickerOverlay
                   src={sticker.src}
-                  onMouseDown={(event) => handleStickerDragStart(index, event)}
+                  onMouseDown={(event) => {
+                    event.stopPropagation();
+                    handleStickerClick(index, event);
+                    handleStickerDragStart(index, event);
+                  }}
               />
               {selectedStickerIndex === index && (
                 <>
