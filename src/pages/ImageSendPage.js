@@ -37,8 +37,8 @@ const Textarea = styled.textarea`
   margin-bottom: 10px;
   resize: none;
   background-color: #f5f5f5;
-  pointer-events: none; /* 수정 불가능 */
   color: #333;
+  overflow-y: auto;
 `;
 
 const ImageUploadContainer = styled.div`

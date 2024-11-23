@@ -100,6 +100,8 @@ const RequirementsPage = ({
 
         setLoading(true);
 
+        const startTime = Date.now();
+
         try {
             const userPrompt = `${previousMessage} 키워드: ${selectedKeywords.join(', ')}. ${requirement}`;
             const translatedPrompt = await translatePrompt(userPrompt, userId);
@@ -109,11 +111,12 @@ const RequirementsPage = ({
                 initImage: selectedSample,
                 negativePrompt: useNegativePrompt, // 상태 전달
             });
-            console.log(result.time);
 
             setGeneratedImage(result.uploadedImageUrl);
             setImageHistory((prevHistory) => [result.uploadedImageUrl, ...prevHistory]);
-            setGenerationTime(result.time);
+
+            const endTime = Date.now();
+            setGenerationTime((endTime - startTime) / 1000);
             setActivePage('ImageEditingPage');
         } catch (error) {
             alert('이미지 생성에 실패했습니다.');
