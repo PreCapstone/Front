@@ -209,15 +209,14 @@ const ImageSendPage = ({ setActivePage, previousMessage, generatedImage, editedI
       );
   
       // 성공 여부 확인
-      responses.forEach((response, index) => {
-        if (response?.code === '1000') {
-          console.log(`메시지 전송 성공: ${recipients[index]}`);
-        } else {
-          console.error(`메시지 전송 실패(${recipients[index]}):`, response);
-        }
-      });
-  
-      alert('모든 메시지가 성공적으로 전송되었습니다!');
+      const allSuccess = responses.every((response) => response?.code === '1000');
+      if (allSuccess) {
+        setActivePage('SendSuccessPage'); // 성공 페이지로 이동
+      } else {
+        alert('일부 메시지 전송이 실패했습니다.');
+      }
+
+      alert('메시지 전송에 성공하셨습니다!');
     } catch (error) {
       console.error('전송 실패:', error);
       alert(`전송 실패: ${error.response?.data || error.message}`);

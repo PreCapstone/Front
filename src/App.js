@@ -8,6 +8,8 @@ import SMSPage from './pages/MessageSendPage';
 import LoginPage from './pages/LoginPage';  // 로그인 페이지
 import SignupPage from './pages/SignupPage';  // 회원가입 페이지
 import ImageSendPage from './pages/ImageSendPage';
+import SendSuccessPage from './pages/SendSuccessPage';
+
 const App = () => {
   const [activePage, setActivePage] = useState('LoginPage');
   const [message, setMessage] = useState(''); // 메시지 상태
@@ -75,15 +77,21 @@ const App = () => {
     
       case 'SMSPage': // SMSPage 전달
         return <SMSPage previousMessage={message} setActivePage={setActivePage} />;
-        case 'ImageSendPage':
-          return (
-            <ImageSendPage
-              previousMessage={message}
-              setActivePage={setActivePage}
-              generatedImage={generatedImage} // 기본 생성 이미지
-              editedImage={editedImage}       // 편집된 이미지
-            />
-          );        
+      case 'ImageSendPage':
+        return (
+          <ImageSendPage
+            previousMessage={message}
+            setActivePage={setActivePage}
+            generatedImage={generatedImage} // 기본 생성 이미지
+            editedImage={editedImage}       // 편집된 이미지
+          />
+        );        
+      case 'SendSuccessPage':
+        return (
+          <SendSuccessPage
+            setActivePage={setActivePage}  
+          />
+        );
       default:
         return (
           <MessageInputPage
@@ -96,7 +104,8 @@ const App = () => {
     }
   };
 
-  const shouldShowMenuBar = activePage !== 'SMSPage' && activePage !== 'LoginPage' && activePage !== 'SignupPage' && activePage !== 'ImageSendPage';
+  const shouldShowMenuBar = activePage !== 'SMSPage' && activePage !== 'LoginPage' && activePage !== 'SignupPage' &&
+                            activePage !== 'ImageSendPage' && activePage !== 'SendSuccessPage';
 
   return (
     <div style={{ display: activePage === 'SMSPage' ? 'block' : 'flex', height: '100vh' }}>

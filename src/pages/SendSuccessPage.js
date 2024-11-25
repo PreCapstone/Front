@@ -36,7 +36,7 @@ const Button = styled.button`
   margin-top: 20px;
 `;
 
-const SendSuccessPage = () => {
+const SendSuccessPage = ({ setActivePage }) => {
   const [isAnimating, setIsAnimating] = useState(false);
 
   const flyingVariants = {
@@ -104,7 +104,7 @@ const SendSuccessPage = () => {
             }
           />
         </CircleFrame>
-        <Button onClick={handleSend}>버튼</Button>
+        <Button onClick={() => setActivePage('MessageInput')}>돌아가기</Button>
       </div>
     </Container>
   );

@@ -160,6 +160,8 @@ const StickerOverlayContainer = styled.div`
   height: ${({ height }) => height || 60}px;
   border: ${({ selected }) => (selected ? '2px dashed blue' : 'none')};
   box-sizing: border-box;
+  z-index: 999; // 버튼보다 낮아야 함
+  pointer-events: auto; // 클릭 이벤트 허용
 `;
 
 const StickerSelectionContainer = styled.div`
@@ -377,71 +379,49 @@ const ImageEditingPage = ({
     }
   };
 
+  const stickersRef = useRef([]);
+  const draggingIndexRef = useRef(null);
+  const dragStartPositionRef = useRef({ x: 0, y: 0 });
+
   const handleDragStart = (index, type, event) => {
-    setDraggingIndex({ index, type }); // 타입("text" 또는 "sticker")과 인덱스를 함께 저장
-    setDragStartPosition({
+    draggingIndexRef.current = { index, type };
+    dragStartPositionRef.current = {
       x: event.clientX,
       y: event.clientY,
-    });
+    };
   };
 
   const imageContainerRef = useRef(null);
   
   const handleDrag = (event) => {
-    if (draggingIndex) {
-      const deltaX = event.clientX - dragStartPosition.x;
-      const deltaY = event.clientY - dragStartPosition.y;
+  if (draggingIndexRef.current) {
+    const deltaX = event.clientX - dragStartPositionRef.current.x;
+    const deltaY = event.clientY - dragStartPositionRef.current.y;
 
-      if (imageContainerRef.current) {
-        const containerRect = imageContainerRef.current.getBoundingClientRect();
+    if (draggingIndexRef.current.type === "sticker") {
+      setStickers((prevStickers) => {
+        const updatedStickers = [...prevStickers];
+        const sticker = updatedStickers[draggingIndexRef.current.index];
 
-        if (draggingIndex.type === "text") {
-          setTexts((prevTexts) => {
-            const updatedTexts = [...prevTexts];
-            const text = updatedTexts[draggingIndex.index];
+        sticker.left = Math.max(sticker.left + deltaX, 0);
+        sticker.top = Math.max(sticker.top + deltaY, 0);
 
-            const newLeft = Math.min(
-              Math.max((text.left || 0) + deltaX, 0),
-              containerRect.width - 10
-            );
-            const newTop = Math.min(
-              Math.max((text.top || 0) + deltaY, 0),
-              containerRect.height - 10
-            );
-
-            updatedTexts[draggingIndex.index] = { ...text, left: newLeft, top: newTop };
-            return updatedTexts;
-          });
-        } else if (draggingIndex.type === "sticker") {
-          setStickers((prevStickers) => {
-            const updatedStickers = [...prevStickers];
-            const sticker = updatedStickers[draggingIndex.index];
-
-            const newLeft = Math.min(
-              Math.max((sticker.left || 0) + deltaX, 0),
-              containerRect.width - sticker.width
-            );
-            const newTop = Math.min(
-              Math.max((sticker.top || 0) + deltaY, 0),
-              containerRect.height - sticker.height
-            );
-
-            updatedStickers[draggingIndex.index] = { ...sticker, left: newLeft, top: newTop };
-            return updatedStickers;
-          });
-        }
-
-        setDragStartPosition({
-          x: event.clientX,
-          y: event.clientY,
-        });
-      }
+        return updatedStickers;
+      });
     }
-  };
+
+    dragStartPositionRef.current = {
+      x: event.clientX,
+      y: event.clientY,
+    };
+  }
+};
+
   
-  const handleDragEnd = () => {
-    setDraggingIndex(null);
-  };
+const handleDragEnd = () => {
+  draggingIndexRef.current = null;
+  dragStartPositionRef.current = { x: 0, y: 0 };
+};
 
   const handleDeleteText = () => {
     if (selectedTextIndex !== null) {
@@ -493,6 +473,8 @@ const ImageEditingPage = ({
     setSelectedStickerIndex(stickers.length); // 기존 상태 활용
   }, [stickers]);
 
+  
+
   const handleStickerDragStart = (index, event) => {
     event.stopPropagation();
     setDraggingIndex({
@@ -524,18 +506,26 @@ const ImageEditingPage = ({
       
   
   const handleDeleteSticker = (index) => {
+    console.log("Delete sticker index:", index); // 디버깅용 로그
+  
+    // 스티커 삭제 및 상태 업데이트
     setStickers((prevStickers) => {
       const updatedStickers = prevStickers.filter((_, i) => i !== index);
-      // 스티커 삭제 후 새로운 선택 설정
-      if (updatedStickers.length > 0) {
-        setSelectedStickerIndex(updatedStickers.length - 1); // 마지막 스티커 선택
-      } else {
-        setSelectedStickerIndex(null); // 스티커가 없으면 선택 해제
-      }
+      console.log("Updated Stickers:", updatedStickers);
       return updatedStickers;
     });
-  };
   
+    // stickers 상태가 업데이트된 후, selectedStickerIndex를 업데이트
+    setTimeout(() => {
+      setSelectedStickerIndex((prevIndex) => {
+        if (index >= stickers.length - 1) {
+          // 삭제 후 남은 스티커가 없는 경우
+          return null;
+        }
+        return Math.min(prevIndex, stickers.length - 2); // 마지막 스티커 선택
+      });
+    }, 0);
+  };  
 
   useEffect(() => {
     if (generatedImage) {
@@ -702,11 +692,14 @@ const ImageEditingPage = ({
     }
     setDraggingIndex(null);
   }, []);
-      
-  useEffect(() => {
-    console.log('ImageEditingPage로 전달된 generationTime:', generationTime);
-  }, [generationTime]);
 
+  useEffect(() => {
+    if (stickers.length === 0) {
+      setSelectedStickerIndex(null);
+    } else if (selectedStickerIndex >= stickers.length) {
+      setSelectedStickerIndex(stickers.length - 1);
+    }
+  }, [stickers, selectedStickerIndex]);  
 
   useEffect(() => {
     document.addEventListener("mousemove", handleStickerDrag);
@@ -722,28 +715,21 @@ const ImageEditingPage = ({
   
   useEffect(() => {
     const handleMouseMove = (event) => {
-        if (draggingIndex?.type === "resize") {
-            handleStickerResize(event);
-        } else if (draggingIndex?.type === "drag") {
-            handleStickerDrag(event);
-        }
+      handleDrag(event);
     };
-
+  
     const handleMouseUp = () => {
-        if (draggingIndex) {
-            setDraggingIndex(null); // 드래그 또는 리사이즈 종료
-        }
+      handleDragEnd();
     };
-
+  
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
-
+  
     return () => {
-        document.removeEventListener("mousemove", handleMouseMove);
-        document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [draggingIndex, handleStickerResize, handleStickerDrag]);
-
+  }, []);
   
   return (
     <PageContainer onMouseMove={handleDrag} onMouseUp={handleDragEnd}>
@@ -898,8 +884,7 @@ const ImageEditingPage = ({
 
           {stickers.map((sticker, index) => (
             <StickerOverlayContainer
-            id={`sticker-${index}`} // 고유 ID 부여
-            key={index}
+            key={`${sticker.src}-${index}`} // 고유 ID 부여
             top={sticker.top}
             left={sticker.left}
             width={sticker.width}
@@ -958,8 +943,16 @@ const ImageEditingPage = ({
                       height: "25px",
                       cursor: "pointer",
                       fontSize: "16px",
+                      zIndex: 1000, // 버튼을 가장 위로 올림
+                      pointerEvents: "auto", // 클릭 이벤트 허용
                     }}
-                    onClick={() => handleDeleteSticker(index)}
+                    onMouseDown={(event) => {
+                      event.stopPropagation(); // 부모 요소로 이벤트 전파 차단
+                    }}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleDeleteSticker(index)
+                    }}
                   >
                     X
                   </button>
