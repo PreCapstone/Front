@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { sendSMS, sendMMS } from '../services/messageService'; // 서비스 임포트
+import { uploadImageToS3 } from '../services/imageUploadService';
 
 const PageContainer = styled.div`
   display: flex;
@@ -185,45 +186,50 @@ const MessageSendPage = ({ setActivePage, previousMessage }) => {
     setRecipients(recipients.filter((recipient) => recipient !== number));
   };
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      // 파일 형식 확인
-      if (!['image/png'].includes(file.type)) {
-        alert('PNG 형식의 이미지만 업로드 가능합니다.');
-        return;
+      try {
+        // 파일 형식 확인
+        if (!['image/png'].includes(file.type)) {
+          alert('PNG 형식의 이미지만 업로드 가능합니다.');
+          return;
+        }
+  
+        setSelectedImage(file);
+        setImagePreview(URL.createObjectURL(file));
+  
+        // 서버에 업로드하여 URL 생성
+        const userId = sessionStorage.getItem("userId") || "123";
+        const uploadedUrl = await uploadImageToS3(file, userId);
+        console.log('Uploaded URL:', uploadedUrl);
+        if (uploadedUrl) {
+          setBase64Image(uploadedUrl); // URL을 상태에 저장
+        } else {
+          throw new Error('URL 생성 실패');
+        }
+      } catch (error) {
+        alert('이미지 업로드 실패: ' + error.message);
       }
-  
-      setSelectedImage(file);
-      setImagePreview(URL.createObjectURL(file));
-  
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64Data = reader.result.split(',')[1]; // 헤더 제거 후 Base64 데이터
-        setBase64Image(base64Data);
-      };
-      reader.readAsDataURL(file); // Base64 형식으로 파일 읽기
     } else {
       setSelectedImage(null);
       setImagePreview(null);
-      setBase64Image(null); // 이미지 제거 시 초기화
+      setBase64Image(null);
     }
-  };
+  };  
 
   const handleSendMessage = async () => {
     if (isMMS && selectedImage) {
-      const fileData = base64Image; // Base64 인코딩된 데이터
-      const fileName = selectedImage.name; // 파일 이름
-      const fileSize = selectedImage.size; // 파일 크기 (바이트)
+      const fileUrl = base64Image;
   
       setIsSending(true);
       try {
         await Promise.all(
           recipients.map((recipient) =>
-            sendMMS(recipient, message, fileName, fileData, fileSize)
+            sendMMS(recipient, message, fileUrl, {})
           )
         );
-        alert('모든 메시지 전송 성공!');
+        setActivePage('SendSuccessPage');
       } catch (error) {
         alert('일부 메시지 전송 실패: ' + error.message);
       } finally {
@@ -236,7 +242,7 @@ const MessageSendPage = ({ setActivePage, previousMessage }) => {
         await Promise.all(
           recipients.map((recipient) => sendSMS(recipient, message))
         );
-        alert('모든 메시지 전송 성공!');
+        setActivePage('SendSuccessPage');;
       } catch (error) {
         alert('일부 메시지 전송 실패: ' + error.message);
       } finally {

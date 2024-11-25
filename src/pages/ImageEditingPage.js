@@ -18,7 +18,9 @@ const ImageContainer = styled.div`
     align-items: center;
     justify-content: center;
     position: relative;
-    padding: 20px;
+    padding: 0;
+    border: 0;
+    margin: 0;
     box-sizing: border-box;
     overflow: hidden;
 `;
@@ -45,7 +47,7 @@ const TextOverlay = styled.div`
   position: absolute;
   top: ${({ top }) => (top !== undefined ? top : 0)}px;
   left: ${({ left }) => (left !== undefined ? left : 0)}px;
-  cursor: move;
+  cursor: ${({ dragging }) => (dragging ? "grabbing" : "grab")};
   font-size: ${({ fontSize }) => fontSize || 16}px;
   font-family: ${({ fontFamily }) => fontFamily || 'Arial'};
   color: ${({ color }) => color || 'yellow'};
@@ -160,6 +162,7 @@ const StickerOverlayContainer = styled.div`
   height: ${({ height }) => height || 60}px;
   border: ${({ selected }) => (selected ? '2px dashed blue' : 'none')};
   box-sizing: border-box;
+  cursor: ${({ dragging }) => (dragging ? "grabbing" : "grab")};
   z-index: 999; // 버튼보다 낮아야 함
   pointer-events: auto; // 클릭 이벤트 허용
 `;
@@ -208,6 +211,7 @@ const ImageEditingPage = ({
   const [selectedTextIndex, setSelectedTextIndex] = useState(null);
   const [selectedStickerIndex, setSelectedStickerIndex] = useState(null);
   const [stickers, setStickers] = useState([]);
+  const [dragging, setDragging] = useState(false);
   const [draggingIndex, setDraggingIndex] = useState(null);
   const [dragStartPosition, setDragStartPosition] = useState({ x: 0, y: 0 });
   const [fontSize] = useState(30);
@@ -384,41 +388,68 @@ const ImageEditingPage = ({
   const dragStartPositionRef = useRef({ x: 0, y: 0 });
 
   const handleDragStart = (index, type, event) => {
+    if (index === null || type === null) return; // index와 type이 유효하지 않으면 중단
+  
+    event.preventDefault();
+    const containerRect = imageContainerRef.current.getBoundingClientRect();
+  
     draggingIndexRef.current = { index, type };
     dragStartPositionRef.current = {
-      x: event.clientX,
-      y: event.clientY,
+      x: event.clientX - containerRect.left, // 컨테이너 기준 좌표
+      y: event.clientY - containerRect.top, // 컨테이너 기준 좌표
     };
-  };
 
+    setDragging(true);
+  };  
+  
   const imageContainerRef = useRef(null);
   
   const handleDrag = (event) => {
-  if (draggingIndexRef.current) {
-    const deltaX = event.clientX - dragStartPositionRef.current.x;
-    const deltaY = event.clientY - dragStartPositionRef.current.y;
-
-    if (draggingIndexRef.current.type === "sticker") {
+    if (!draggingIndexRef.current || draggingIndexRef.current.index === null) {
+      return; // 드래그 상태가 유효하지 않으면 중단
+    }
+  
+    const { index, type } = draggingIndexRef.current;
+    const containerRect = imageContainerRef.current.getBoundingClientRect();
+    const deltaX = event.clientX - containerRect.left - dragStartPositionRef.current.x;
+    const deltaY = event.clientY - containerRect.top - dragStartPositionRef.current.y;
+  
+    if (type === "text") {
+      setTexts((prevTexts) => {
+        return prevTexts.map((text, i) => {
+          if (i === index) {
+            return {
+              ...text,
+              left: Math.max(0, text.left + deltaX),
+              top: Math.max(0, text.top + deltaY),
+            };
+          }
+          return text;
+        });
+      });
+    } else if (type === "sticker") {
       setStickers((prevStickers) => {
-        const updatedStickers = [...prevStickers];
-        const sticker = updatedStickers[draggingIndexRef.current.index];
-
-        sticker.left = Math.max(sticker.left + deltaX, 0);
-        sticker.top = Math.max(sticker.top + deltaY, 0);
-
-        return updatedStickers;
+        return prevStickers.map((sticker, i) => {
+          if (i === index) {
+            return {
+              ...sticker,
+              left: Math.max(0, sticker.left + deltaX),
+              top: Math.max(0, sticker.top + deltaY),
+            };
+          }
+          return sticker;
+        });
       });
     }
-
+  
     dragStartPositionRef.current = {
-      x: event.clientX,
-      y: event.clientY,
+      x: event.clientX - containerRect.left,
+      y: event.clientY - containerRect.top,
     };
-  }
-};
-
+  };  
   
 const handleDragEnd = () => {
+  setDragging(false);
   draggingIndexRef.current = null;
   dragStartPositionRef.current = { x: 0, y: 0 };
 };
@@ -592,85 +623,46 @@ const handleDragEnd = () => {
     });
   };  
   
-  const handleStickerResize = useCallback((event) => {
-    if (draggingIndex?.type === "resize") {
-      const {
-        index,
-        direction,
-        startX,
-        startY,
-        initialWidth,
-        initialHeight,
-        initialTop,
-        initialLeft,
-      } = draggingIndex;
-
-      const deltaX = event.clientX - startX;
-      const deltaY = event.clientY - startY;
-
-      if (imageContainerRef.current) {
-        const containerRect = imageContainerRef.current.getBoundingClientRect();
-
-        setStickers((prevStickers) => {
-          const updatedStickers = [...prevStickers];
-          const sticker = updatedStickers[index];
-
-          let newWidth = sticker.width;
-          let newHeight = sticker.height;
-          let newTop = sticker.top;
-          let newLeft = sticker.left;
-
-          switch (direction) {
-            case "nw":
-              newWidth = Math.max(20, initialWidth - deltaX);
-              newHeight = Math.max(20, initialHeight - deltaY);
-              newLeft = Math.min(
-                Math.max(initialLeft + deltaX, 0),
-                containerRect.width - newWidth
-              );
-              newTop = Math.min(
-                Math.max(initialTop + deltaY, 0),
-                containerRect.height - newHeight
-              );
-              break;
-            case "ne":
-              newWidth = Math.max(20, initialWidth + deltaX);
-              newHeight = Math.max(20, initialHeight - deltaY);
-              newTop = Math.min(
-                Math.max(initialTop + deltaY, 0),
-                containerRect.height - newHeight
-              );
-              break;
-            case "sw":
-              newWidth = Math.max(20, initialWidth - deltaX);
-              newHeight = Math.max(20, initialHeight + deltaY);
-              newLeft = Math.min(
-                Math.max(initialLeft + deltaX, 0),
-                containerRect.width - newWidth
-              );
-              break;
-            case "se":
-              newWidth = Math.max(20, initialWidth + deltaX);
-              newHeight = Math.max(20, initialHeight + deltaY);
-              break;
-            default:
-              break;
-          }
-
-          updatedStickers[index] = {
-            ...sticker,
-            width: Math.min(newWidth, containerRect.width),
-            height: Math.min(newHeight, containerRect.height),
-            top: newTop,
-            left: newLeft,
-          };
-          return updatedStickers;
-        });
+  const handleStickerResize = (event) => {
+    if (!draggingIndex || draggingIndex.type !== "resize") return;
+  
+    const {
+      index,
+      direction,
+      startX,
+      startY,
+      initialWidth,
+      initialHeight,
+      initialTop,
+      initialLeft,
+    } = draggingIndex;
+  
+    const deltaX = event.clientX - startX;
+    const deltaY = event.clientY - startY;
+  
+    setStickers((prevStickers) => {
+      const updatedStickers = [...prevStickers];
+      const sticker = updatedStickers[index];
+  
+      // 크기와 위치 계산
+      if (direction.includes("e")) {
+        sticker.width = Math.max(20, initialWidth + deltaX);
       }
-    }
-  }, [draggingIndex]);
-
-
+      if (direction.includes("s")) {
+        sticker.height = Math.max(20, initialHeight + deltaY);
+      }
+      if (direction.includes("w")) {
+        sticker.width = Math.max(20, initialWidth - deltaX);
+        sticker.left = Math.max(initialLeft + deltaX, 0);
+      }
+      if (direction.includes("n")) {
+        sticker.height = Math.max(20, initialHeight - deltaY);
+        sticker.top = Math.max(initialTop + deltaY, 0);
+      }
+  
+      return updatedStickers;
+    });
+  };  
 
   const handleMouseUp = useCallback(() => {
     if (draggingIndex?.type === "resize") {
@@ -715,11 +707,19 @@ const handleDragEnd = () => {
   
   useEffect(() => {
     const handleMouseMove = (event) => {
-      handleDrag(event);
+      if (!draggingIndexRef.current) return;
+  
+      if (draggingIndexRef.current.type === "resize") {
+        handleStickerResize(event);
+      } else if (draggingIndexRef.current.type === "drag") {
+        handleDrag(event);
+      }
     };
   
     const handleMouseUp = () => {
-      handleDragEnd();
+      if (draggingIndexRef.current) {
+        handleDragEnd();
+      }
     };
   
     document.addEventListener("mousemove", handleMouseMove);
@@ -729,7 +729,7 @@ const handleDragEnd = () => {
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
-  }, []);
+  }, []);  
   
   return (
     <PageContainer onMouseMove={handleDrag} onMouseUp={handleDragEnd}>

@@ -20,6 +20,15 @@ const App = () => {
   const [editedImage, setEditedImage] = useState(null); // 편집된 이미지 상태 추가
   const [generationTime, setGenerationTime] = useState(null);
 
+  const resetMessage = () => {
+    setMessage(''); // 메시지 초기화
+    setRequirement(''); // 요구사항 초기화
+    setKeywords([]); // 키워드 초기화
+    setGeneratedImage(null); // 생성된 이미지 초기화
+    setEditedImage(null); // 편집된 이미지 초기화
+    setGenerationTime(null); // 이미지 생성 시간 초기화
+  };
+
   const renderPage = () => {
     switch (activePage) {
       case 'LoginPage':
@@ -89,6 +98,7 @@ const App = () => {
       case 'SendSuccessPage':
         return (
           <SendSuccessPage
+            resetMessage={resetMessage}
             setActivePage={setActivePage}  
           />
         );

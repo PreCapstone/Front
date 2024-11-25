@@ -66,7 +66,7 @@ const PaperPlane = styled(motion.img)`
   object-fit: contain;
 `;
 
-const SendSuccessPage = ({ setActivePage }) => {
+const SendSuccessPage = ({ setActivePage, resetMessage }) => {
   const [isAnimating, setIsAnimating] = useState(false);
 
 // framer motion > vh vw 가능 default px
@@ -153,6 +153,9 @@ const SendSuccessPage = ({ setActivePage }) => {
           />
           <StyledButton 
             onClick={() => {
+              console.log('resetMessage:', resetMessage); // undefined가 아닌 "function"이어야 함
+              console.log(typeof resetMessage);
+              resetMessage();
               setActivePage('MessageInput');
             }}  
             text="처음으로"

@@ -216,7 +216,6 @@ const ImageSendPage = ({ setActivePage, previousMessage, generatedImage, editedI
         alert('일부 메시지 전송이 실패했습니다.');
       }
 
-      alert('메시지 전송에 성공하셨습니다!');
     } catch (error) {
       console.error('전송 실패:', error);
       alert(`전송 실패: ${error.response?.data || error.message}`);
