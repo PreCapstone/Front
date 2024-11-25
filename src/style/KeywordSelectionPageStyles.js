@@ -86,5 +86,5 @@ export const ButtonContainer = styled.div`
 export const PageTitle = styled.h2`
   font-size: 1.5rem;
   margin-bottom: 1vh;
-  color: #333;
+  color: ${PRIMARY_COLOR};
 `;
