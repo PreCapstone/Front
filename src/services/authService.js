@@ -66,4 +66,7 @@ export const login = async (loginData) => {
  */
 export const logout = () => {
   sessionStorage.removeItem('authToken'); // 세션에서 토큰 제거
+  //오류해결
+  sessionStorage.removeItem('userId');
+  window.location.reload();
 };
