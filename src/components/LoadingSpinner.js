@@ -1,4 +1,4 @@
-// components/LoadingSpinner.jsx
+// 스피너(팩맨)
 import React from 'react';
 import { PacmanLoader } from 'react-spinners';
 import styled from 'styled-components';

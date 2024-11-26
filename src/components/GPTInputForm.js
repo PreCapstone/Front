@@ -1,9 +1,10 @@
-// src/components/GPTInputForm.jsx
+// 메시지 입력 > gpt한테 넣을 인자 받는 컴포넌트
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import Button from './Button';
 import { PRIMARY_COLOR } from '../style/colors';
 
+// 전체 컨테이너
 const FormContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -11,18 +12,21 @@ const FormContainer = styled.div`
   width: 100%;
 `;
 
+// 질문 + 대답칸
 const InputGroup = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.5vh;
 `;
 
+// 질문
 const Label = styled.label`
   font-size: 0.85vw; 
   color: #333;
   font-weight: 500;
 `;
 
+// 대답칸
 const TextField = styled.input`
   width: 100%;
   padding: 1vh 1vw;
@@ -73,6 +77,8 @@ const ButtonContainer = styled.div`
   width: 100%;
 `;
 
+// formData 상태 관리, 값 변하면 handleInputChange가 상태 바꾸러 옴 
+// MessageInputPage의 handleGPTSubmit = onSubmit
 const GPTInputForm = ({ onSubmit }) => {
   const [formData, setFormData] = useState({
     mood: '',
@@ -89,8 +95,10 @@ const GPTInputForm = ({ onSubmit }) => {
     }));
   };
 
+  // 배열 매핑해서 렌더링
   return (
     <FormContainer>
+      {/* 배열 순회 > 각 태그 생성 */}
       {inputFields.map(field => (
         <InputGroup key={field.id}>
           <Label htmlFor={field.id}>{field.label}</Label>
