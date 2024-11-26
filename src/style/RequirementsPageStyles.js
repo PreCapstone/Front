@@ -19,13 +19,6 @@ export const Textarea = styled.textarea`
     resize: none;
 `;
 
-export const ByteCount = styled.div`
-    text-align: right;
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 20px;
-`;
-
 export const SampleImageLabel = styled.div`
     font-size: 25px;
     font-weight: bold;
