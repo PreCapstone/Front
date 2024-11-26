@@ -374,13 +374,12 @@ const ImageEditingPage = ({
       });
     }
   };
-
   const handleDragStart = (index, type, event) => {
     if (index === null || type === null) return;
-
+  
     event.preventDefault();
     const containerRect = imageContainerRef.current.getBoundingClientRect();
-
+  
     setDraggingIndex({
       index,
       type,
@@ -388,7 +387,7 @@ const ImageEditingPage = ({
       startY: event.clientY - containerRect.top,
     });
   };
-
+  
   const handleDrag = (event) => {
     if (!draggingIndex) return;
 
@@ -644,27 +643,31 @@ const ImageEditingPage = ({
   useEffect(() => {
     const handleMouseMove = (event) => {
       if (!draggingIndex) return;
-
+  
       if (draggingIndex.type === 'resize') {
         handleStickerResize(event);
-      } else if (draggingIndex.type === 'drag' || draggingIndex.type === 'text') {
+      } else if (
+        draggingIndex.type === 'drag' ||
+        draggingIndex.type === 'text' ||
+        draggingIndex.type === 'sticker'
+      ) {
         handleDrag(event);
       }
     };
-
+  
     const handleMouseUpEvent = () => {
       handleMouseUp();
     };
-
+  
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUpEvent);
-
+  
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUpEvent);
     };
   }, [draggingIndex, handleStickerResize, handleDrag, handleMouseUp]);
-
+  
   return (
     <PageContainer>
       {showTextEdit && (
