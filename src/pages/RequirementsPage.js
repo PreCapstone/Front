@@ -41,6 +41,7 @@ const RequirementsPage = ({
 
     const imageWidth = 120 + 10;
     const maxVisibleImages = 7;
+    const [sliderHeight, setSliderHeight] = useState(200); // 초기 높이 설정
 
     // 샘플 이미지 가져오기
     useEffect(() => {
@@ -60,6 +61,10 @@ const RequirementsPage = ({
     }, []);
 
     const maxOffset = -(Math.ceil(sampleImages.length / maxVisibleImages) - 1) * (imageWidth * maxVisibleImages);
+
+    const handleImageHover = (isHovered) => {
+        setSliderHeight(isHovered ? 300 : 200); // 확대 여부에 따라 높이 조정
+    };
 
     const handleTextareaChange = (e) => {
         setRequirement(e.target.value);
@@ -163,6 +168,8 @@ const RequirementsPage = ({
                                     src={img}
                                     alt={`샘플 ${index}`}
                                     onClick={() => handleImageClick(img)}
+                                    onMouseEnter={() => handleImageHover(true)} // 마우스 올릴 때
+                                    onMouseLeave={() => handleImageHover(false)} // 마우스 뗄 때
                                     selected={selectedSample === img}
                                 />
                             ))}

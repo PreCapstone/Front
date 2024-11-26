@@ -39,6 +39,7 @@ export const SliderContainer = styled.div`
     align-items: center;
     overflow: hidden;
     width: 100%; /* 가로 크기 제한 */
+    height: 200px; /* 세로 공간 증가 */
 `;
 
 export const SampleImageList = styled.div`
@@ -47,6 +48,7 @@ export const SampleImageList = styled.div`
     transition: transform 0.3s ease-in-out;
     transform: translateX(${({ offset }) => offset}px);
     width: calc(120px * 7 + 60px); /* 7개의 이미지와 갭에 맞는 너비 설정 */
+    position: relative; /* 확대된 이미지 표시를 위한 설정 */
 `;
 
 export const SampleImage = styled.img`
@@ -55,10 +57,13 @@ export const SampleImage = styled.img`
     border: 4px solid ${({selected}) => (selected ? '#e20e0e' : '#ccc')}; /* 선택된 경우 두께를 4px로 설정 */
     border-radius: 5px;
     cursor: pointer;
-    transition: border-color 0.3s, border-width 0.3s; /* 선의 두께와 색상 변화에 애니메이션 추가 */
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s;
 
     &:hover {
         border-color: #e20e0e;
+        transform: scale(1.5); /* 이미지 확대 */
+        z-index: 5; /* 다른 이미지 위로 올라옴 */
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     }
 `;
 
