@@ -12,13 +12,17 @@ const PageContainer = styled.div`
 `;
 
 const ImageContainer = styled.div`
-  flex: 3;
-  position: relative;
-  padding: 0;
-  border: 0;
-  margin: 0;
-  box-sizing: border-box;
-  overflow: hidden;
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 0;
+    border: 0;
+    margin: 0;
+    box-sizing: border-box;
+    overflow: hidden;
 `;
 
 const Image = styled.img`
