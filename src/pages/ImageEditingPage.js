@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { getUserImages } from '../services/imageService';
 import { SketchPicker } from 'react-color';
 import { uploadImageToS3 } from "../services/imageUploadService";
+import { div } from 'motion/react-client';
 
 const PageContainer = styled.div`
     padding: 20px;
@@ -127,7 +128,7 @@ const HistoryImage = styled.img`
 const ButtonGroup = styled.div`
   display: flex;
   gap: 10px;
-  margin-top: 20px;
+  margin-top: 10px;
   justify-content: center;
 `;
 
@@ -203,6 +204,7 @@ const ImageEditingPage = ({
   setActivePage,
   setEditedImage,
   generationTime,
+  generationAPITime,
 }) => {
   const [showTextEdit, setShowTextEdit] = useState(false);
   const [showStickerEdit, setShowStickerEdit] = useState(false);
@@ -850,11 +852,19 @@ const handleDragEnd = () => {
                     <>
                         <Image src={selectedImage} alt="Generated" />
                         {generationTime ? (
-                            <p style={{ marginTop: '10px', fontSize: '14px', color: '#555' }}>
-                            이미지 생성 시간: {generationTime}초</p> 
+                            <div>
+                              <p style={{ fontSize: '12px', color: '#555' }}>
+                              이미지 생성 시간: {generationTime}초</p> 
+                              <p style={{ fontSize: '12px', color: '#555' }}>
+                              서버 응답 시간: {generationAPITime}초</p> 
+                            </div>
                             ) : (
-                            <p style={{ marginTop: '10px', fontSize: '14px', color: '#555' }}>
-                            이미지 생성 시간: ??초</p>     
+                            <div>
+                              <p style={{ fontSize: '12px', color: '#555' }}>
+                              이미지 생성 시간: ??초</p> 
+                              <p style={{ fontSize: '12px', color: '#555' }}>
+                              서버 응답 시간: ??초</p> 
+                            </div>
                         )}
                     </>
                 ) : (

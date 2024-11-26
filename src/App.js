@@ -19,6 +19,7 @@ const App = () => {
   const [keywords, setKeywords] = useState([]); // 키워드 상태 추가
   const [editedImage, setEditedImage] = useState(null); // 편집된 이미지 상태 추가
   const [generationTime, setGenerationTime] = useState(null);
+  const [generationAPITime, setGenerationAPITime] = useState(null);
 
   const resetMessage = () => {
     setMessage(''); // 메시지 초기화
@@ -68,6 +69,7 @@ const App = () => {
                 setGeneratedImage={setGeneratedImage}
                 setImageHistory={setImageHistory}
                 setGenerationTime={setGenerationTime}
+                setGenerationAPITime={setGenerationAPITime}
             />
         );
 
@@ -81,6 +83,7 @@ const App = () => {
           setGeneratedImage={setGeneratedImage}
           setEditedImage={setEditedImage} // 편집된 이미지 저장 함수 전달
           generationTime={generationTime}
+          generationAPITime={generationAPITime}
         />
       );
     

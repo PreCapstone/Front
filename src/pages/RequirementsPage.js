@@ -29,6 +29,7 @@ const RequirementsPage = ({
                               selectedKeywords,
                               previousMessage,
                               setGenerationTime,
+                              setGenerationAPITime,
                           }) => {
     const [loading, setLoading] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -122,6 +123,9 @@ const RequirementsPage = ({
 
             const endTime = Date.now();
             setGenerationTime((endTime - startTime) / 1000);
+            setGenerationAPITime(result.time);
+            console.log(result.time);
+
             setActivePage('ImageEditingPage');
         } catch (error) {
             alert('이미지 생성에 실패했습니다.');
