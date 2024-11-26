@@ -1,3 +1,4 @@
+// 짧은 편이라 그냥 분리 안 하고 하나의 파일로 처리합니다.
 import React, { useState, useEffect } from 'react';
 import { motion } from "framer-motion";
 import styled from 'styled-components';

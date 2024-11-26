@@ -1,4 +1,5 @@
-// components/Button.js
+// 공용 버튼, 크기 지정은 가져다 쓸때 ButtonContainer로 해줘야 하고 버튼 기본색은 Primary Color
+// 설정 가능한 부분이 더 필요하다면 추가하면 됩니다
 import React from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
