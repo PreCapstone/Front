@@ -30,8 +30,7 @@ const RequirementsPage = ({
                               previousMessage,
                               setGenerationTime,
                           }) => {
-    const [loading, setLoading] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+    const [loading, setLoading] = useState(false); // 하나로 통합
     const [selectedSample, setSelectedSample] = useState(null);
     const [currentOffset, setCurrentOffset] = useState(0);
     const [sampleImages, setSampleImages] = useState([]);
@@ -46,14 +45,14 @@ const RequirementsPage = ({
     // 샘플 이미지 가져오기
     useEffect(() => {
         const loadSampleImages = async () => {
-            setIsLoading(true);
+            setLoading(true); // 로딩 상태 설정
             try {
                 const images = await fetchSampleImages();
                 setSampleImages(images);
             } catch (error) {
                 alert('샘플 이미지를 가져오는 데 실패했습니다.');
             } finally {
-                setIsLoading(false);
+                setLoading(false); // 로딩 상태 해제
             }
         };
 
@@ -130,12 +129,11 @@ const RequirementsPage = ({
         }
     };
 
-
     return (
         <PageContainer>
-            {isLoading ? (
+            {loading ? (
                 <ModalOverlay>
-                    <LoadingSpinner text="샘플 이미지를 가져오는 중입니다..." />
+                    <LoadingSpinner text="로딩 중입니다..." />
                 </ModalOverlay>
             ) : (
                 <>
@@ -185,7 +183,7 @@ const RequirementsPage = ({
                                 checked={useNegativePrompt}
                                 onChange={() => setUseNegativePrompt((prev) => !prev)}
                             />
-                        <label>GPT에게 프롬프트 부탁하기</label>
+                            <label>GPT에게 프롬프트 부탁하기</label>
                         </CheckboxContainer>
                     </div>
                     <ButtonContainer>
