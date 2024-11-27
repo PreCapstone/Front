@@ -130,7 +130,6 @@ const HistoryImage = styled.img`
 const ButtonGroup = styled.div`
   display: flex;
   gap: 10px;
-  margin-top: 20px;
   justify-content: center;
 `;
 
@@ -193,6 +192,7 @@ const ImageEditingPage = ({
   setActivePage,
   setEditedImage,
   generationTime,
+  generationAPITime,
 }) => {
   const [showTextEdit, setShowTextEdit] = useState(false);
   const [showStickerEdit, setShowStickerEdit] = useState(false);
@@ -492,18 +492,26 @@ const ImageEditingPage = ({
   }, []);
 
   const handleDeleteSticker = (index) => {
+    console.log("Delete sticker index:", index); // 디버깅용 로그
+  
+    // 스티커 삭제 및 상태 업데이트
     setStickers((prevStickers) => {
       const updatedStickers = prevStickers.filter((_, i) => i !== index);
+      console.log("Updated Stickers:", updatedStickers);
       return updatedStickers;
     });
-
-    setSelectedStickerIndex((prevIndex) => {
-      if (prevIndex >= index) {
-        return prevIndex - 1;
-      }
-      return prevIndex;
-    });
-  };
+  
+    // stickers 상태가 업데이트된 후, selectedStickerIndex를 업데이트
+    setTimeout(() => {
+      setSelectedStickerIndex((prevIndex) => {
+        if (index >= stickers.length - 1) {
+          // 삭제 후 남은 스티커가 없는 경우
+          return null;
+        }
+        return Math.min(prevIndex, stickers.length - 2); // 마지막 스티커 선택
+      });
+    }, 0);
+  };  
 
   useEffect(() => {
     if (generatedImage) {
@@ -604,19 +612,33 @@ const ImageEditingPage = ({
           let newLeft = initialLeft;
           let newTop = initialTop;
 
-          if (direction === 'e') {
-            newWidth = Math.max(20, initialWidth + deltaX);
-          }
-          if (direction === 's') {
-            newHeight = Math.max(20, initialHeight + deltaY);
-          }
-          if (direction === 'w') {
-            newWidth = Math.max(20, initialWidth - deltaX);
-            newLeft = Math.max(initialLeft + deltaX, 0);
-          }
-          if (direction === 'n') {
-            newHeight = Math.max(20, initialHeight - deltaY);
-            newTop = Math.max(initialTop + deltaY, 0);
+          switch (direction) {
+            case 'nw': // North-West
+              newWidth = Math.max(20, initialWidth - deltaX);
+              newHeight = Math.max(20, initialHeight - deltaY);
+              newLeft = Math.max(initialLeft + deltaX, 0);
+              newTop = Math.max(initialTop + deltaY, 0);
+              break;
+  
+            case 'ne': // North-East
+              newWidth = Math.max(20, initialWidth + deltaX);
+              newHeight = Math.max(20, initialHeight - deltaY);
+              newTop = Math.max(initialTop + deltaY, 0);
+              break;
+  
+            case 'sw': // South-West
+              newWidth = Math.max(20, initialWidth - deltaX);
+              newHeight = Math.max(20, initialHeight + deltaY);
+              newLeft = Math.max(initialLeft + deltaX, 0);
+              break;
+  
+            case 'se': // South-East
+              newWidth = Math.max(20, initialWidth + deltaX);
+              newHeight = Math.max(20, initialHeight + deltaY);
+              break;
+  
+            default:
+              break;
           }
 
           return {
@@ -778,9 +800,15 @@ const ImageEditingPage = ({
           <>
             <Image src={selectedImage} alt="Generated" />
             {generationTime ? (
-              <p style={{ marginTop: '10px', fontSize: '14px', color: '#555' }}>이미지 생성 시간: {generationTime}초</p>
-            ) : (
-              <p style={{ marginTop: '10px', fontSize: '14px', color: '#555' }}>이미지 생성 시간: ??초</p>
+              <div>
+                <p style={{ fontSize: '12px', color: '#555' }}>이미지 생성 시간: {generationTime}초</p>
+                <p style={{ fontSize: '12px', color: '#555' }}>서버 응답 시간: {generationAPITime}초</p>
+              </div>
+              ) : (
+                <div>
+                <p style={{ fontSize: '12px', color: '#555' }}>이미지 생성 시간: ??초</p>
+                <p style={{ fontSize: '12px', color: '#555' }}>서버 응답 시간: ??초</p>
+              </div>
             )}
           </>
         ) : (
@@ -829,25 +857,50 @@ const ImageEditingPage = ({
             {selectedStickerIndex === index && (
               <>
                 <ResizeHandle
-                  direction="n"
-                  position="top: 0%; left: 50%;"
-                  onMouseDown={(event) => handleStickerResizeStart(index, 'n', event)}
+                  direction="nw"
+                  position="top: 0%; left: 0%;"
+                  onMouseDown={(event) => handleStickerResizeStart(index, 'nw', event)}
                 />
                 <ResizeHandle
-                  direction="s"
-                  position="top: 100%; left: 50%;"
-                  onMouseDown={(event) => handleStickerResizeStart(index, 's', event)}
+                  direction="ne"
+                  position="top: 0%; left: 100%;"
+                  onMouseDown={(event) => handleStickerResizeStart(index, 'ne', event)}
                 />
                 <ResizeHandle
-                  direction="e"
-                  position="top: 50%; left: 100%;"
-                  onMouseDown={(event) => handleStickerResizeStart(index, 'e', event)}
+                  direction="sw"
+                  position="top: 100%; left: 0%;"
+                  onMouseDown={(event) => handleStickerResizeStart(index, 'sw', event)}
                 />
                 <ResizeHandle
-                  direction="w"
-                  position="top: 50%; left: 0%;"
-                  onMouseDown={(event) => handleStickerResizeStart(index, 'w', event)}
+                  direction="se"
+                  position="top: 100%; left: 100%;"
+                  onMouseDown={(event) => handleStickerResizeStart(index, 'se', event)}
+                  
                 />
+                <button
+                  style={{
+                    position: 'absolute',
+                    top: '-20px',
+                    right: '-20px',
+                    background: 'red',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '20px',
+                    height: '20px',
+                    cursor: 'pointer',
+                  }}
+                  onMouseDown={(event) => {
+                    event.stopPropagation(); // 부모 요소로 이벤트 전파 차단
+                  }}
+                  onClick={(event) => {
+                    event.stopPropagation(); // 클릭 이벤트가 부모로 전달되지 않도록 방지
+                    console.log('삭제할 스티커 인덱스: ', index);
+                    handleDeleteSticker(index);
+                  }}
+                >
+                  ×
+                </button>
               </>
             )}
           </StickerOverlayContainer>
