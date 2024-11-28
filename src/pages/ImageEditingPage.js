@@ -296,6 +296,10 @@ const ImageEditingPage = ({
           renderedHeight = containerWidth / originalAspectRatio;
         }
 
+          // 렌더링된 이미지의 시작 좌표 계산
+        const offsetX = (containerWidth - renderedWidth) / 2;
+        const offsetY = (containerHeight - renderedHeight) / 2;
+
         // 캔버스 크기를 렌더링된 이미지 크기로 설정
         canvas.width = renderedWidth;
         canvas.height = renderedHeight;
@@ -303,15 +307,16 @@ const ImageEditingPage = ({
         console.log('Original Image ratio:', img.width / img.height);
         console.log('Rendered Image ratio:',  renderedWidth / renderedHeight );
         console.log('Rendered Image Size:', { renderedWidth, renderedHeight });
+        console.log('Rendered Image Start Position:', { left: offsetX, top: offsetY });
         console.log('Canvas Size:', { width: canvas.width, height: canvas.height });  
 
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, offsetX, offsetY, canvas.width, canvas.height);
 
         texts.forEach((textObj) => {
           ctx.textBaseline = "top";
           ctx.font = `${textObj.bold ? 'bold ' : ''}${textObj.italic ? 'italic ' : ''}${textObj.fontSize}px ${textObj.fontFamily}`;
           ctx.fillStyle = textObj.color;
-          ctx.fillText(textObj.text, textObj.left, textObj.top);
+          ctx.fillText(textObj.text, textObj.left + offsetX, textObj.top + offsetY);
         });
 
         await Promise.all(
@@ -323,8 +328,8 @@ const ImageEditingPage = ({
                 stickerImg.onload = () => {
                   ctx.drawImage(
                     stickerImg,
-                    sticker.left,
-                    sticker.top,
+                    sticker.left + offsetX,
+                    sticker.top + offsetY,
                     sticker.width,
                     sticker.height
                   );
