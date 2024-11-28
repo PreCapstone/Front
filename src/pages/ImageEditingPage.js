@@ -26,9 +26,7 @@ const ImageContainer = styled.div`
 `;
 
 const Image = styled.img`
-  width: 100%;
-  height: auto;
-  max-width: auto;
+  max-width: 100%;
   max-height: 80%;
   object-fit: contain;
 `;
