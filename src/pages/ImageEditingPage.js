@@ -29,6 +29,7 @@ const Image = styled.img`
   max-width: 100%;
   max-height: 80%;
   object-fit: contain;
+  object-position: top;
 `;
 
 const Placeholder = styled.div`
