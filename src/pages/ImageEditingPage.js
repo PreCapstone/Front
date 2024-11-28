@@ -29,7 +29,6 @@ const Image = styled.img`
   max-width: 100%;
   max-height: 80%;
   object-fit: contain;
-  object-position: top;
 `;
 
 const Placeholder = styled.div`
@@ -817,13 +816,13 @@ const ImageEditingPage = ({
             <Image src={selectedImage} alt="Generated" />
             {generationTime ? (
               <div>
-                <p style={{ fontSize: '12px', color: '#555' }}>이미지 생성 시간: {generationTime}초</p>
-                <p style={{ fontSize: '12px', color: '#555' }}>서버 응답 시간: {generationAPITime}초</p>
+                <p style={{ fontSize: '12px', color: '#555' }}>이미지 생성 시간: {generationAPITime}초</p>
+                <p style={{ fontSize: '12px', color: '#555' }}>총 소요 시간: {generationTime}초</p>
               </div>
               ) : (
                 <div>
                 <p style={{ fontSize: '12px', color: '#555' }}>이미지 생성 시간: ??초</p>
-                <p style={{ fontSize: '12px', color: '#555' }}>서버 응답 시간: ??초</p>
+                <p style={{ fontSize: '12px', color: '#555' }}>총 소요 시간: ??초</p>
               </div>
             )}
           </>
