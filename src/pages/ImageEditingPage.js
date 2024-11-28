@@ -26,7 +26,9 @@ const ImageContainer = styled.div`
 `;
 
 const Image = styled.img`
-  max-width: 100%;
+  width: 100%;
+  height: auto;
+  max-width: auto;
   max-height: 80%;
   object-fit: contain;
 `;
@@ -279,27 +281,39 @@ const ImageEditingPage = ({
     img.onload = async () => {
       try {
         const imageContainerRect = imageContainerRef.current.getBoundingClientRect();
-        const renderedWidth = imageContainerRect.width;
-        const renderedHeight = imageContainerRect.height;
+        const containerWidth = imageContainerRect.width;
+        const containerHeight = imageContainerRect.height;
 
-        const aspectRatio = img.width / img.height;
+        const originalAspectRatio = img.width / img.height;
 
-        if (aspectRatio >= 1) {
-          canvas.width = renderedWidth;
-          canvas.height = renderedWidth / aspectRatio;
+        // 렌더링된 이미지 크기 계산 (원본 이미지 비율 유지)
+        let renderedWidth = containerWidth;
+        let renderedHeight = containerHeight;
+
+        if (containerWidth / containerHeight > originalAspectRatio) {
+          // 컨테이너가 원본 비율보다 더 넓은 경우 (높이를 기준으로 조정)
+          renderedWidth = containerHeight * originalAspectRatio;
         } else {
-          canvas.height = renderedHeight;
-          canvas.width = renderedHeight * aspectRatio;
+          // 컨테이너가 원본 비율보다 더 높은 경우 (너비를 기준으로 조정)
+          renderedHeight = containerWidth / originalAspectRatio;
         }
+
+        // 캔버스 크기를 렌더링된 이미지 크기로 설정
+        canvas.width = renderedWidth;
+        canvas.height = renderedHeight;
+
+        console.log('Original Image ratio:', img.width / img.height);
+        console.log('Rendered Image ratio:',  renderedWidth / renderedHeight );
+        console.log('Rendered Image Size:', { renderedWidth, renderedHeight });
+        console.log('Canvas Size:', { width: canvas.width, height: canvas.height });  
 
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
         texts.forEach((textObj) => {
-          const relativeLeft = (textObj.left / renderedWidth) * canvas.width;
-          const relativeTop = (textObj.top / renderedHeight) * canvas.height;
+          ctx.textBaseline = "top";
           ctx.font = `${textObj.bold ? 'bold ' : ''}${textObj.italic ? 'italic ' : ''}${textObj.fontSize}px ${textObj.fontFamily}`;
           ctx.fillStyle = textObj.color;
-          ctx.fillText(textObj.text, relativeLeft, relativeTop);
+          ctx.fillText(textObj.text, textObj.left, textObj.top);
         });
 
         await Promise.all(
@@ -309,14 +323,12 @@ const ImageEditingPage = ({
                 const stickerImg = new window.Image();
                 stickerImg.src = sticker.src;
                 stickerImg.onload = () => {
-                  const relativeLeft = (sticker.left / renderedWidth) * canvas.width;
-                  const relativeTop = (sticker.top / renderedHeight) * canvas.height;
                   ctx.drawImage(
                     stickerImg,
-                    relativeLeft,
-                    relativeTop,
-                    (sticker.width / renderedWidth) * canvas.width,
-                    (sticker.height / renderedHeight) * canvas.height
+                    sticker.left,
+                    sticker.top,
+                    sticker.width,
+                    sticker.height
                   );
                   resolve();
                 };
