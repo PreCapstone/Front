@@ -279,27 +279,44 @@ const ImageEditingPage = ({
     img.onload = async () => {
       try {
         const imageContainerRect = imageContainerRef.current.getBoundingClientRect();
-        const renderedWidth = imageContainerRect.width;
-        const renderedHeight = imageContainerRect.height;
+        const containerWidth = imageContainerRect.width;
+        const containerHeight = imageContainerRect.height;
 
-        const aspectRatio = img.width / img.height;
+        const originalAspectRatio = img.width / img.height;
 
-        if (aspectRatio >= 1) {
-          canvas.width = renderedWidth;
-          canvas.height = renderedWidth / aspectRatio;
+        // 렌더링된 이미지 크기 계산 (원본 이미지 비율 유지)
+        let renderedWidth = containerWidth;
+        let renderedHeight = containerHeight;
+
+        if (containerWidth / containerHeight > originalAspectRatio) {
+          // 컨테이너가 원본 비율보다 더 넓은 경우 (높이를 기준으로 조정)
+          renderedWidth = containerHeight * originalAspectRatio;
         } else {
-          canvas.height = renderedHeight;
-          canvas.width = renderedHeight * aspectRatio;
+          // 컨테이너가 원본 비율보다 더 높은 경우 (너비를 기준으로 조정)
+          renderedHeight = containerWidth / originalAspectRatio;
         }
 
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          // 렌더링된 이미지의 시작 좌표 계산
+        const offsetX = (containerWidth - renderedWidth) / 2;
+        const offsetY = (containerHeight - renderedHeight) / 2;
+
+        // 캔버스 크기를 렌더링된 이미지 크기로 설정
+        canvas.width = renderedWidth;
+        canvas.height = renderedHeight;
+
+        console.log('Original Image ratio:', img.width / img.height);
+        console.log('Rendered Image ratio:',  renderedWidth / renderedHeight );
+        console.log('Rendered Image Size:', { renderedWidth, renderedHeight });
+        console.log('Rendered Image Start Position:', { left: offsetX, top: offsetY });
+        console.log('Canvas Size:', { width: canvas.width, height: canvas.height });  
+
+        ctx.drawImage(img, offsetX, offsetY, canvas.width, canvas.height);
 
         texts.forEach((textObj) => {
-          const relativeLeft = (textObj.left / renderedWidth) * canvas.width;
-          const relativeTop = (textObj.top / renderedHeight) * canvas.height;
+          ctx.textBaseline = "top";
           ctx.font = `${textObj.bold ? 'bold ' : ''}${textObj.italic ? 'italic ' : ''}${textObj.fontSize}px ${textObj.fontFamily}`;
           ctx.fillStyle = textObj.color;
-          ctx.fillText(textObj.text, relativeLeft, relativeTop);
+          ctx.fillText(textObj.text, textObj.left + offsetX, textObj.top + offsetY);
         });
 
         await Promise.all(
@@ -309,14 +326,12 @@ const ImageEditingPage = ({
                 const stickerImg = new window.Image();
                 stickerImg.src = sticker.src;
                 stickerImg.onload = () => {
-                  const relativeLeft = (sticker.left / renderedWidth) * canvas.width;
-                  const relativeTop = (sticker.top / renderedHeight) * canvas.height;
                   ctx.drawImage(
                     stickerImg,
-                    relativeLeft,
-                    relativeTop,
-                    (sticker.width / renderedWidth) * canvas.width,
-                    (sticker.height / renderedHeight) * canvas.height
+                    sticker.left + offsetX,
+                    sticker.top + offsetY,
+                    sticker.width,
+                    sticker.height
                   );
                   resolve();
                 };
@@ -801,13 +816,13 @@ const ImageEditingPage = ({
             <Image src={selectedImage} alt="Generated" />
             {generationTime ? (
               <div>
-                <p style={{ fontSize: '12px', color: '#555' }}>이미지 생성 시간: {generationTime}초</p>
-                <p style={{ fontSize: '12px', color: '#555' }}>서버 응답 시간: {generationAPITime}초</p>
+                <p style={{ fontSize: '12px', color: '#555' }}>이미지 생성 시간: {generationAPITime}초</p>
+                <p style={{ fontSize: '12px', color: '#555' }}>총 소요 시간: {generationTime}초</p>
               </div>
               ) : (
                 <div>
                 <p style={{ fontSize: '12px', color: '#555' }}>이미지 생성 시간: ??초</p>
-                <p style={{ fontSize: '12px', color: '#555' }}>서버 응답 시간: ??초</p>
+                <p style={{ fontSize: '12px', color: '#555' }}>총 소요 시간: ??초</p>
               </div>
             )}
           </>

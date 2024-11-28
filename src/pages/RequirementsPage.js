@@ -137,7 +137,7 @@ const RequirementsPage = ({
         <PageContainer>
             {loading ? (
                 <ModalOverlay>
-                    <LoadingSpinner text="로딩 중입니다..." />
+                    <LoadingSpinner text="이미지를 생성 하고있습니다..." />
                 </ModalOverlay>
             ) : (
                 <>
